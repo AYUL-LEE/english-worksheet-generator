@@ -1,15 +1,12 @@
 {
   "version": 2,
-  "buildCommand": "",
-  "outputDirectory": "public",
-  "framework": null,
-  "functions": {
-    "api/*.js": {
-      "runtime": "@vercel/node@2.15.10"
-    }
-  },
+  "builds": [
+    { "src": "api/**/*.js", "use": "@vercel/node@3" }
+  ],
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/$1.js" },
     { "src": "/(.*)", "dest": "/public/$1" }
-  ]
+  ],
+  "engines": { "node": "20.x" },
+  "outputDirectory": "public"
 }
