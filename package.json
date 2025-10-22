@@ -8,6 +8,6 @@
     "puppeteer": "^21.11.0"
   },
   "engines": {
-  "node": "20.x"
+  "node": "18.x"
 }
 }
