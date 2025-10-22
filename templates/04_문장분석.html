@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>문장분석 - 현대 아이들의 안전한 감옥</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4; margin: 12mm; }
+  * { margin:0; padding:0; box-sizing:border-box; font-size:11px !important; }
+  body { font-family:'Inter','Noto Sans KR',sans-serif; width:210mm; min-height:297mm; margin:0 auto; padding:12mm; background:#ffffff; line-height:1.35; color:#1f2937; }
+
+  .header { background:linear-gradient(135deg,#1E40AF,#3B82F6); color:#fff; padding:12px 20px; border-radius:6px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; }
+  .header h1 { font-size:14px !important; font-weight:700; margin:0; }
+  .header-right { font-size:10px !important; text-transform:uppercase; letter-spacing:1px; opacity:.9; }
+
+  .sentence-row { margin-bottom:12px; border-radius:4px; overflow:hidden; border:1px solid #E2E8F0; }
+  .sentence-content { display:grid; grid-template-columns: 8fr 2fr; }
+  .english-side { background:#fff; padding:12px 15px; border-right:1px solid #E2E8F0; display:flex; align-items:flex-start; gap:8px; }
+  .korean-side { background:#F0F8FF; padding:12px 15px; display:flex; align-items:flex-start; font-size:9px !important; color:#1E40AF; }
+
+  .sentence-number { background:#1E40AF; color:#fff; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:10px !important; flex-shrink:0; margin-top:2px; }
+
+  .english-text { font-size:11px !important; line-height:1.7; font-weight:500; }
+  .korean-text { font-size:9px !important; line-height:1.6; font-weight:500; }
+
+  .g { color:#d90429; font-weight:800; }
+
+  .dm { background:#ede9fe; padding:0 .25em; border-radius:6px; }
+
+  .u { display:inline-flex; flex-direction:column; align-items:center; margin:0 2px; }
+  .u .w { border-bottom:2px solid #3B82F6; padding-bottom:1px; line-height:1.2; }
+  .u .l { font-size:9px !important; line-height:1; color:#334155; margin-top:1px; }
+
+  .point-box { border-top:1px dashed #CBD5E1; background:#F9FAFB; padding:6px 10px; font-size:10px !important; color:#374151; }
+
+  @media print { body { padding:10mm; } .sentence-row { break-inside:avoid; margin-bottom:8px; } }
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>문장분석</h1>
+    <div class="header-right">평택 베리타스학원</div>
+  </div>
+
+  <!-- 01 -->
+  <div class="sentence-row">
+    <div class="sentence-content">
+      <div class="english-side">
+        <div class="sentence-number">01</div>
+        <div>
+          <div class="english-text">
+            <span class="u"><span class="w">Children today</span><span class="l">주어</span></span>
+            <span class="u g"><span class="w">are</span><span class="l">동사</span></span>
+            <span class="u g"><span class="w">"safe"</span><span class="l">보어</span></span>.
+          </div>
+        </div>
+      </div>
+      <div class="korean-side"><div class="korean-text">오늘날 아이들은 “안전하다”.</div></div>
+    </div>
+    <div class="point-box">
+      ① <strong>ability</strong> 능력 (유의: capability / skill | 반의: inability)<br>
+      ② <strong>be 동사</strong> 현재시제 / 보어(C) 판별
+    </div>
+  </div>
+
+  <!-- 02 -->
+  <div class="sentence-row">
+    <div class="sentence-content">
+      <div class="english-side">
+        <div class="sentence-number">02</div>
+        <div>
+          <div class="english-text">
+            <span class="u"><span class="w">Their only worries</span><span class="l">주어</span></span>
+            <span class="u g"><span class="w">consist of</span><span class="l">동사</span></span>
+            fights with their parents, going to school, and dealing with the list of activities
+            <span class="u g"><span class="w">that they're signed up for</span><span class="l">관계사절</span></span>.
+          </div>
+        </div>
+      </div>
+      <div class="korean-side"><div class="korean-text">그들의 유일한 걱정은 부모와의 다툼, 등교, 등록한 활동을 처리하는 일이다.</div></div>
+    </div>
+    <div class="point-box">
+      ① <strong>adapt</strong> 조정하다 (유의: adjust / modify | 반의: remain)<br>
+      ② <strong>consist of</strong> ~로 구성되다 (구동사 표현)<br>
+      ③ 관계사 <strong>that</strong> 목적격 절
+    </div>
+  </div>
+
+  <!-- 03 -->
+  <div class="sentence-row">
+    <div class="sentence-content">
+      <div class="english-side">
+        <div class="sentence-number">03</div>
+        <div>
+          <div class="english-text">
+            <span class="u"><span class="w dm">But</span><span class="l">담화표지</span></span>
+            <span class="u"><span class="w">what's</span><span class="l">의문사+동사</span></span>
+            <span class="u"><span class="w">going on</span><span class="l">동사</span></span>?
+          </div>
+        </div>
+      </div>
+      <div class="korean-side"><div class="korean-text">그런데 무슨 일이 벌어지고 있는 걸까?</div></div>
+    </div>
+    <div class="point-box">
+      ① <strong>But</strong> 그러나, 그런데 (담화 전환)<br>
+      ② 의문문 어순 (의문사 what + be 동사)
+    </div>
+  </div>
+
+  <!-- 04 -->
+  <div class="sentence-row">
+    <div class="sentence-content">
+      <div class="english-side">
+        <div class="sentence-number">04</div>
+        <div>
+          <div class="english-text">
+            <span class="u"><span class="w">If</span><span class="l">접속사</span></span>
+            <span class="u"><span class="w">they</span><span class="l">주어</span></span>
+            <span class="u g"><span class="w">'re</span><span class="l">동사</span></span>
+            <span class="u g"><span class="w">"safe"</span><span class="l">보어</span></span>
+            and
+            <span class="u"><span class="w">living</span><span class="l">동사ing</span></span>
+            <span class="u g"><span class="w">"well"</span><span class="l">보어</span></span>,
+            <span class="u"><span class="w">why</span><span class="l">의문사</span></span>
+            <span class="u"><span class="w">do</span><span class="l">조동사</span></span>
+            <span class="u"><span class="w">they</span><span class="l">주어</span></span>
+            <span class="u"><span class="w">experience</span><span class="l">동사</span></span>
+            <span class="u"><span class="w">so many problems</span><span class="l">목적어</span></span>?
+          </div>
+        </div>
+      </div>
+      <div class="korean-side"><div class="korean-text">그들이 “안전”하고 “잘” 살고 있다면, 왜 그렇게 많은 문제를 겪을까?</div></div>
+    </div>
+    <div class="point-box">
+      ① <strong>If</strong> ~라면 (조건절)<br>
+      ② <strong>why</strong> 의문사 / <strong>do</strong> 조동사 의문문 어순
+    </div>
+  </div>
+
+  <!-- 05 -->
+  <div class="sentence-row">
+    <div class="sentence-content">
+      <div class="english-side">
+        <div class="sentence-number">05</div>
+        <div>
+          <div class="english-text">
+            <span class="u"><span class="w">Children</span><span class="l">주어</span></span>
+            <span class="u g"><span class="w">have learned</span><span class="l">현재완료</span></span>
+            <span class="u"><span class="w">to be cautious</span><span class="l">to부정사</span></span>;
+            <span class="u"><span class="w">a lot of kids</span><span class="l">주어</span></span>
+            <span class="u g"><span class="w">have lost</span><span class="l">현재완료</span></span>
+            <span class="u"><span class="w">that innate curiosity</span><span class="l">목적어</span></span>
+            <span class="u g"><span class="w">that no one should ever lose</span><span class="l">관계사절</span></span>.
+          </div>
+        </div>
+      </div>
+      <div class="korean-side"><div class="korean-text">아이들은 조심하는 법을 배웠고; 많은 아이들은 누구도 잃어서는 안 되는 타고난 호기심을 잃었다.</div></div>
+    </div>
+    <div class="point-box">
+      ① <strong>have + p.p.</strong> 현재완료 (결과/경험)<br>
+      ② <strong>to부정사</strong> 용법 (보어)<br>
+      ③ 관계사절 <strong>that</strong>
+    </div>
+  </div>
+
+  <!-- 06 -->
+  <div class="sentence-row">
+    <div class="sentence-content">
+      <div class="english-side">
+        <div class="sentence-number">06</div>
+        <div>
+          <div class="english-text">
+            <span class="u"><span class="w">The big problem</span><span class="l">주어</span></span>
+            <span class="u"><span class="w">is</span><span class="l">동사</span></span>
+            <span class="u"><span class="w">that</span><span class="l">접속사</span></span>
+            <span class="u"><span class="w">they</span><span class="l">주어</span></span>
+            <span class="u g"><span class="w">are exposed</span><span class="l">수동태</span></span>
+            <span class="u"><span class="w">to large flows of information</span><span class="l">전치사구</span></span>
+            <span class="u g"><span class="w">that are hard to process</span><span class="l">관계사절</span></span>.
+          </div>
+        </div>
+      </div>
+      <div class="korean-side"><div class="korean-text">큰 문제는 그들이 처리하기 어려운 방대한 정보 흐름에 노출되어 있다는 것이다.</div></div>
+    </div>
+    <div class="point-box">
+      ① <strong>be + p.p.</strong> 수동태<br>
+      ② <strong>that</strong> 명사절 / 관계사절
+    </div>
+  </div>
+
+  <!-- 07 -->
+  <div class="sentence-row">
+    <div class="sentence-content">
+      <div class="english-side">
+        <div class="sentence-number">07</div>
+        <div>
+          <div class="english-text">
+            <span class="u g"><span class="w">It's</span><span class="l">비인칭주어</span></span>
+            <span class="u"><span class="w">even</span><span class="l">부사</span></span>
+            <span class="u"><span class="w">hard</span><span class="l">보어</span></span>
+            <span class="u"><span class="w">for us</span><span class="l">전치사구</span></span>.
+          </div>
+        </div>
+      </div>
+      <div class="korean-side"><div class="korean-text">우리에게도 어렵다.</div></div>
+    </div>
+    <div class="point-box">
+      ① <strong>It is + 형용사 + for ~</strong> 비인칭주어 구문
+    </div>
+  </div>
+
+  <!-- 08 -->
+  <div class="sentence-row">
+    <div class="sentence-content">
+      <div class="english-side">
+        <div class="sentence-number">08</div>
+        <div>
+          <div class="english-text">
+            <span class="u"><span class="w dm">That's why</span><span class="l">담화표지</span></span>
+            <span class="u g"><span class="w">being exposed</span><span class="l">동명사</span></span>
+            <span class="u"><span class="w">to so much stimuli</span><span class="l">전치사구</span></span>
+            <span class="u"><span class="w">causes</span><span class="l">동사</span></span>
+            <span class="u"><span class="w">stress</span><span class="l">목적어</span></span>
+            <span class="u g"><span class="w">that they're incapable of tolerating</span><span class="l">관계사절</span></span>.
+          </div>
+        </div>
+      </div>
+      <div class="korean-side"><div class="korean-text">그래서 그렇게 많은 자극에 노출되는 것이 그들이 감당할 수 없는 스트레스를 유발한다.</div></div>
+    </div>
+    <div class="point-box">
+      ① <strong>being ~</strong> 동명사 주어<br>
+      ② 관계사절 <strong>that</strong>
+    </div>
+  </div>
+
+  <!-- 09 -->
+  <div class="sentence-row">
+    <div class="sentence-content">
+      <div class="english-side">
+        <div class="sentence-number">09</div>
+        <div>
+          <div class="english-text">
+            <span class="u"><span class="w">All this</span><span class="l">주어</span></span>
+            <span class="u"><span class="w">causes</span><span class="l">동사</span></span>
+            <span class="u"><span class="w">children</span><span class="l">목적어</span></span>
+            <span class="u"><span class="w">to grow up quickly</span><span class="l">to부정사</span></span>,
+            <span class="u g"><span class="w">going</span><span class="l">분사</span></span>
+            <span class="u"><span class="w">through their developmental stages</span><span class="l">전치사구</span></span>
+            <span class="u g"><span class="w

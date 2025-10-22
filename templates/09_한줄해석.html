@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>한줄해석 - 현대 아이들의 안전한 감옥</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4; margin: 12mm; }
+  * { margin:0; padding:0; box-sizing:border-box; font-size:11px !important; }
+  body {
+    font-family:'Inter','Noto Sans KR',sans-serif;
+    width:210mm; min-height:297mm;
+    margin:0 auto; padding:12mm;
+    background:#ffffff; line-height:1.45; color:#1f2937;
+  }
+
+  .header {
+    background:linear-gradient(135deg,#1E40AF,#3B82F6);
+    color:#fff; padding:12px 20px; border-radius:6px;
+    margin-bottom:15px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .header h1 { font-size:14px !important; font-weight:700; margin:0; }
+  .header-right { font-size:10px !important; text-transform:uppercase; letter-spacing:1px; opacity:.9; }
+
+  /* 🔹 문항 박스 */
+  .item {
+    border:1px solid #E2E8F0;
+    border-radius:8px;
+    overflow:hidden;
+    margin-bottom:14px;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .item-head {
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+    padding:8px 12px;
+    background:#F8FAFF;
+    border-bottom:1px dashed #E2E8F0;
+  }
+
+  .num {
+    background:#1E40AF;
+    color:#fff;
+    width:22px; height:22px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:9px; font-weight:700; flex-shrink:0;
+  }
+
+  .eng {
+    color:#111827;
+    font-weight:600;
+    font-size:13px !important;
+    flex:1;
+  }
+
+  /* 🔹 필기 공간 (항상 일정 높이 확보) */
+  .write-area {
+    position:relative;
+    min-height:50px; /* 항상 확보되는 필기 공간 */
+    margin:0 14px 10px 14px;
+  }
+
+  .write-line {
+    position:absolute;
+    bottom:0;
+    left:0;
+    right:0;
+    border-top:2px solid #CBD5E1;
+  }
+
+  @media print {
+    body { padding:10mm; }
+    .item { break-inside:avoid; }
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>한줄해석</h1>
+    <div class="header-right">평택 베리타스학원</div>
+  </div>
+
+  <!-- 01 -->
+  <div class="item">
+    <div class="item-head">
+      <div class="num">01</div>
+      <div class="eng">Children today are "safe."</div>
+    </div>
+    <div class="write-area"><div class="write-line"></div></div>
+  </div>
+
+  <!-- 02 -->
+  <div class="item">
+    <div class="item-head">
+      <div class="num">02</div>
+      <div class="eng">Their only worries consist of fights with their parents, going to school, and dealing with the list of activities that they're signed up for.</div>
+    </div>
+    <div class="write-area"><div class="write-line"></div></div>
+  </div>
+
+  <!-- 03 -->
+  <div class="item">
+    <div class="item-head">
+      <div class="num">03</div>
+      <div class="eng">But what's going on?</div>
+    </div>
+    <div class="write-area"><div class="write-line"></div></div>
+  </div>
+
+</body>
+</html>

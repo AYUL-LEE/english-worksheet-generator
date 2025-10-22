@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>영어 내신 대비 학습지 생성기</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 영어 내신 대비 학습지 생성기</h1>
+            <p>AI 기반 분석서 + 워크북 자동 생성 시스템</p>
+        </header>
+
+        <!-- API 설정 섹션 -->
+        <section class="config-section">
+            <h2>🔧 API 설정</h2>
+            <div class="config-grid">
+                <div class="input-group">
+                    <label for="apiKey">OpenAI API 키:</label>
+                    <input type="password" id="apiKey" placeholder="sk-..." />
+                </div>
+                <div class="input-group">
+                    <label for="model">모델 선택:</label>
+<select id="model">
+    <option value="gpt-4o-mini">GPT-4o Mini (저렴, 128k)</option>
+    <option value="gpt-4o">GPT-4o (최신, 128k)</option>
+    <option value="gpt-4-turbo">GPT-4 Turbo (128k)</option>
+    <option value="gpt-4">GPT-4 (8k)</option>
+    <option value="gpt-3.5-turbo">GPT-3.5 Turbo (16k)</option>
+</select>
+                </div>
+            </div>
+        </section>
+
+        <!-- 지문 입력 섹션 -->
+        <section class="passage-section">
+            <h2>📝 지문 입력</h2>
+            <div class="passage-counter">
+                <span id="passageCount">현재 지문 수: 0/5</span>
+            </div>
+            <textarea 
+                id="passageInput" 
+                placeholder="영어 지문을 입력하세요. 여러 지문은 --- (하이픈 3개 이상)로 구분해주세요.
+
+예시:
+Children today are 'safe.' Their only worries consist of fights with their parents, going to school, and dealing with the list of activities that they're signed up for. But what's going on? If they're 'safe' and living 'well,' why do they experience so many problems?
+
+-----
+
+Technology has revolutionized the way we communicate and interact with the world around us...
+
+-----
+
+Environmental protection is becoming increasingly important..."
+                rows="15"
+            ></textarea>
+            <div class="help-text">
+                💡 지문 구분은 --- (하이픈 3개 이상)로 해주세요. 최대 5개 지문까지 처리 가능합니다.
+            </div>
+        </section>
+
+        <!-- 학습지 유형 선택 -->
+<section class="types-section">
+    <h2>📋 학습지 유형 선택</h2>
+    
+    <!-- 분석서 카테고리 -->
+    <div class="category">
+        <h3 class="category-title">📊 분석서</h3>
+        <div class="types-grid">
+            <label class="type-checkbox">
+                <input type="checkbox" id="type01" checked>
+                <span>문단개요</span>
+                <small>제목, 구성, 문단요약, 예상문제</small>
+            </label>
+            
+            <label class="type-checkbox">
+                <input type="checkbox" id="type04" checked>
+                <span>문장분석</span>
+                <small>구문분석, 문법포인트</small>
+            </label>
+            
+            <label class="type-checkbox">
+                <input type="checkbox" id="type08" checked>
+                <span>핵심어휘</span>
+                <small>동의어, 반의어 포함</small>
+            </label>
+            
+            <label class="type-checkbox">
+                <input type="checkbox" id="type09" checked>
+                <span>한줄해석</span>
+                <small>영어 문장 ↔ 한글 번역</small>
+            </label>
+        </div>
+    </div>
+
+    <!-- 워크북 카테고리 -->
+    <div class="category">
+        <h3 class="category-title">📝 워크북</h3>
+        <div class="types-grid">
+            <label class="type-checkbox">
+                <input type="checkbox" id="type02">
+                <span>본문노트(직독직해)</span>
+                <small>영어 순서대로 해석 연습</small>
+            </label>
+            
+            <label class="type-checkbox">
+                <input type="checkbox" id="type03">
+                <span>본문노트(의역)</span>
+                <small>자연스러운 한글 해석</small>
+            </label>
+            
+            <label class="type-checkbox">
+                <input type="checkbox" id="type05">
+                <span>어순배열</span>
+                <small>서술형 대비용</small>
+            </label>
+            
+            <label class="type-checkbox">
+                <input type="checkbox" id="type06">
+                <span>단어 연습</span>
+                <small>핵심 단어 암기</small>
+            </label>
+            
+            <label class="type-checkbox">
+                <input type="checkbox" id="type07">
+                <span>구문 분석</span>
+                <small>상세한 문법 설명</small>
+            </label>
+        </div>
+    </div>
+
+    <!-- 전체 선택/해제 버튼 -->
+    <div class="select-all-section">
+        <button id="selectAllAnalysis" class="select-btn">분석서 전체 선택</button>
+        <button id="selectAllWorkbook" class="select-btn">워크북 전체 선택</button>
+        <button id="deselectAll" class="select-btn deselect">전체 해제</button>
+    </div>
+</section>
+
+        <!-- 생성 버튼 -->
+        <section class="generate-section">
+            <button id="generateBtn" class="generate-btn">
+                🚀 학습지 생성하기
+            </button>
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>AI가 학습지를 생성하고 있습니다...</p>
+                <div id="progressInfo" class="progress-info"></div>
+            </div>
+        </section>
+
+        <!-- 결과 섹션 위에 추가 -->
+<section class="history-section" id="historySection" style="display: none;">
+    <h2>📜 생성 기록</h2>
+    <div class="history-actions">
+        <button id="clearHistory" class="clear-btn">전체 삭제</button>
+    </div>
+    <div id="historyList" class="history-list"></div>
+</section>
+
+        <!-- 결과 섹션 -->
+        <section class="result-section" id="resultSection" style="display: none;">
+            <h2>📄 생성된 학습지</h2>
+            <div class="result-actions">
+                <button id="downloadPdf" class="pdf-btn">📥 고품질 PDF 다운로드</button>
+                <button id="previewHtml" class="preview-btn">👁️ 미리보기</button>
+            </div>
+            <div id="generationSummary" class="generation-summary"></div>
+        </section>
+
+        <!-- 미리보기 모달 -->
+        <div id="previewModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>📄 학습지 미리보기</h3>
+                    <button id="closeModal" class="close-btn">&times;</button>
+                </div>
+                <div id="previewContent" class="preview-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
