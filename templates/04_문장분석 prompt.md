@@ -1,8 +1,4 @@
-# sentence_analysis_prompt.md
-
-
 **출력 형식(JSON)**
-
 
 ```json
 {
@@ -41,51 +37,3 @@
 - "출제포인트"라는 단어는 넣지 않는다. 각 문장 박스 하단에 ①②③으로 렌더.
 6. **중복 표기 금지**: 문장 상단에 "현재완료/조건절" 같은 라벨은 쓰지 않는다.
 7. **정확도**: 문장 단위 잘못 분리 금지, 모호할 땐 최소 단위만 밑줄.
-
-
----
-
-
-# sentence_analysis_sample.json
-
-
-```json
-{
-"meta": {
-"source_title": "현대 아이들의 안전한 감옥",
-"labels_ko": ["주어","동사","목적어","보어","전치사구","관계사절","접속사","의문사","조동사","동명사","분사","담화표지"]
-},
-"sentences": [
-{
-"id": 1,
-"english": "Children today are \"safe.\"",
-"korean": "오늘날 아이들은 \"안전하다\".",
-"tokens": [
-{"text":"Children today","label_ko":"주어","underline":true},
-{"text":"are","label_ko":"동사","underline":true,"red_highlight":true},
-{"text":"\"safe\"","label_ko":"보어","underline":true,"red_highlight":true}
-],
-"points": [
-{"type":"vocab","headword":"safe","explain_ko":"안전한","synonyms":["secure"],"antonyms":["dangerous"]},
-{"type":"grammar","title":"be 동사 + 보어","explain_ko":"주어의 상태를 서술하는 기본 형식"}
-]
-},
-{
-"id": 2,
-"english": "Their only worries consist of fights with their parents, going to school, and dealing with the list of activities that they're signed up for.",
-"korean": "그들의 유일한 걱정은 부모와의 다툼, 등교, 등록한 활동을 처리하는 일이다.",
-"tokens": [
-{"text":"Their only worries","label_ko":"주어","underline":true},
-{"text":"consist of","label_ko":"동사","underline":true,"red_highlight":true},
-{"text":"fights with their parents, going to school, and dealing with the list of activities","label_ko":"목적어","underline":true},
-{"text":"that they're signed up for","label_ko":"관계사절","underline":true,"red_highlight":true}
-],
-"points": [
-{"type":"vocab","headword":"consist of","explain_ko":"~으로 구성되다","synonyms":["be composed of"],"antonyms":["lack"]},
-{"type":"vocab","headword":"sign up for","explain_ko":"~에 등록하다","synonyms":["enroll in"],"antonyms":["withdraw from"]},
-{"type":"grammar","title":"관계사절 that","explain_ko":"목적어를 수식하며 세부 정보를 덧붙임"}
-]
-}
-]
-}
-```

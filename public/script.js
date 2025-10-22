@@ -23,24 +23,24 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 전체 선택 버튼들
     document.getElementById('selectAllAnalysis').addEventListener('click', selectAllAnalysis);
-    document.getElementById('selectAllWorkbook').addEventListener('click', selectAllWorkbook);
-    document.getElementById('deselectAll').addEventListener('click', deselectAll);
-     // 히스토리 관련
-    document.getElementById('clearHistory').addEventListener('click', clearAllHistory);
+   // document.getElementById('selectAllWorkbook').addEventListener('click', selectAllWorkbook);
+    // document.getElementById('deselectAll').addEventListener('click', deselectAll);
+    //  // 히스토리 관련
+    // document.getElementById('clearHistory').addEventListener('click', clearAllHistory);
 
-    // DOMContentLoaded에 이벤트 추가
-document.getElementById('saveJson').addEventListener('click', saveJsonToFile);
-document.getElementById('loadJson').addEventListener('click', () => {
-    document.getElementById('jsonFileInput').click();
-});
-document.getElementById('jsonFileInput').addEventListener('change', loadJsonFromFile);
+//     // DOMContentLoaded에 이벤트 추가
+// document.getElementById('saveJson').addEventListener('click', saveJsonToFile);
+// document.getElementById('loadJson').addEventListener('click', () => {
+//     document.getElementById('jsonFileInput').click();
+// });
+// document.getElementById('jsonFileInput').addEventListener('change', loadJsonFromFile);
 
 
     // DOMContentLoaded에 이벤트 추가
 document.getElementById('downloadHtml').addEventListener('click', downloadHTML);
     
-    // 히스토리 로드
-    loadHistory();
+    // // 히스토리 로드
+    // loadHistory();
 
     // 모달 외부 클릭 시 닫기
     previewModal.addEventListener('click', function(e) {
@@ -142,12 +142,16 @@ function downloadHTML() {
         alert('먼저 학습지를 생성해주세요.');
         return;
     }
-    
+
     const blob = new Blob([generatedHTML], { type: 'text/html' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `영어학습지_${new Date().toISOString().slice(0,10)}.html`;
+const title = window.lastResult?.debug?.[0]?.rawJSON?.passage?.korean_title 
+           || "영어학습지";
+
+const date = new Date().toISOString().slice(0,10);
+a.download = `${title}_${date}.html`;
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
@@ -202,7 +206,8 @@ function getSelectedTypes() {
         type06: safeCheck('type06'),
         type07: safeCheck('type07'),
         type08: safeCheck('type08'),
-        type09: safeCheck('type09')
+        type09: safeCheck('type09'),
+        type10: safeCheck('type10')
     };
 }
 
@@ -222,7 +227,7 @@ function parsePassages() {
 // 학습지 생성
 async function generateWorksheet() {
     const apiKey = document.getElementById('apiKey').value.trim();
-    const model = document.getElementById('model').value;
+    const model = "gpt-4o-mini"; // ✅ 항상 고정
     const passages = parsePassages();
     const selectedTypes = getSelectedTypes();
     
@@ -238,7 +243,7 @@ async function generateWorksheet() {
     // UI 업데이트
     document.getElementById('generateBtn').disabled = true;
     document.getElementById('loading').style.display = 'flex';
-    document.getElementById('resultSection').style.display = 'none';
+
     
     const progressInfo = document.getElementById('progressInfo');
     const selectedTypeCount = Object.values(selectedTypes).filter(Boolean).length;
@@ -263,11 +268,14 @@ async function generateWorksheet() {
         const data = await response.json();
         
         if (data.success) {
+            window.lastResult = data; // ✅ 콘솔에서 확인 가능하게 저장
+            console.log("✅ data.success:", data.success, data);
+            console.log("🧩 raw GPT JSON:", JSON.stringify(data.debug?.[0]?.rawJSON, null, 2));
             generatedResults = data.results;
             
             // HTML 생성
             generatedHTML = generatePreviewHTML(data.results, data.passageCount, selectedTypes);
-            
+
             // 히스토리에 저장 ⭐ 여기 추가
             if (data.debug && data.debug[0]) {
                 saveToHistory(data.debug[0].rawJSON, data.passageCount, selectedTypes);
@@ -282,6 +290,9 @@ async function generateWorksheet() {
             
             document.getElementById('generationSummary').textContent = summary;
             
+
+            showPopup('🎉 학습지 생성이 완료되었습니다!');
+            
         } else {
             alert('오류: ' + data.error);
         }
@@ -292,6 +303,7 @@ async function generateWorksheet() {
         // ⭐ 여기서 로딩 종료
         document.getElementById('generateBtn').disabled = false;
         document.getElementById('loading').style.display = 'none';
+         document.getElementById('resultSection').style.display = 'block'; // ✅ 항상 표시
     }
     
 }
@@ -338,14 +350,10 @@ function generatePreviewHTML(results, passageCount, selectedTypes) {
   for (let passageIndex = 0; passageIndex < passageCount; passageIndex++) {
     const types = [
       '01_문단개요',
-      '02_본문노트_직독직해',
-      '03_본문노트_의역',
-      '04_문장분석',
-      '05_어순배열',
-      '06_단어',
-      '07_구문',
+      '03_본문노트_의역',   
       '08_핵심어휘',
-      '09_한줄해석'
+      '09_한줄해석',
+      '10_영문쓰기'
     ];
     
     for (let typeIndex = 0; typeIndex < types.length; typeIndex++) {
@@ -373,7 +381,6 @@ async function downloadPDF() {
         alert('먼저 학습지를 생성해주세요.');
         return;
     }
-    
     try {
         const response = await fetch('/api/generate-pdf', {
             method: 'POST',
@@ -390,7 +397,11 @@ async function downloadPDF() {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `영어학습지_${new Date().toISOString().slice(0,10)}.pdf`;
+       const title = window.lastResult?.debug?.[0]?.rawJSON?.passage?.korean_title 
+           || "영어학습지";
+
+const date = new Date().toISOString().slice(0,10);
+a.download = `${title}_${date}.pdf`;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
@@ -440,7 +451,7 @@ function hidePreview() {
 
 // 전체 선택 함수들도 수정
 function selectAllAnalysis() {
-    const analysisIds = ['type01', 'type02', 'type03', 'type04', 'type08'];
+    const analysisIds = ['type01', 'type03', 'type08', 'type09', 'type10'];
       const allChecked = analysisIds.every(id => document.getElementById(id)?.checked);
     
     analysisIds.forEach(id => {
@@ -572,6 +583,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+function showPopup(message, duration = 2500) {
+  const popup = document.createElement('div');
+  popup.className = 'popup-alert';
+  popup.textContent = message;
+  document.body.appendChild(popup);
+
+  // 애니메이션으로 표시
+  setTimeout(() => popup.classList.add('show'), 50);
+
+  // 지정된 시간 후 자동 제거
+  setTimeout(() => {
+    popup.classList.remove('show');
+    setTimeout(() => popup.remove(), 300);
+  }, duration);
+}
+
+
 
 // 히스토리 저장
 function saveToHistory(jsonData, passageCount, selectedTypes) {
@@ -606,121 +634,121 @@ function saveToHistory(jsonData, passageCount, selectedTypes) {
     loadHistory();
 }
 
-// 히스토리 로드
-function loadHistory() {
-    const history = JSON.parse(localStorage.getItem('worksheet_history') || '[]');
-    historyData = history;
+// // 히스토리 로드
+// function loadHistory() {
+//     const history = JSON.parse(localStorage.getItem('worksheet_history') || '[]');
+//     historyData = history;
     
-    const historySection = document.getElementById('historySection');
-    const historyList = document.getElementById('historyList');
+//     const historySection = document.getElementById('historySection');
+//     const historyList = document.getElementById('historyList');
     
-    if (history.length === 0) {
-        historySection.style.display = 'none';
-        return;
-    }
+//     if (history.length === 0) {
+//         historySection.style.display = 'none';
+//         return;
+//     }
     
-    historySection.style.display = 'block';
+//     historySection.style.display = 'block';
     
-    historyList.innerHTML = history.map((item, index) => `
-        <div class="history-item">
-            <div class="history-info">
-                <div class="history-title">${item.title}</div>
-                <div class="history-meta">
-                    생성일: ${item.date} | 지문 수: ${item.passageCount}개
-                </div>
-            </div>
-            <div class="history-actions-btn">
-                <button class="history-btn download-btn" onclick="downloadHistoryPDF(${index})">
-                    📥 PDF 다운로드
-                </button>
-                <button class="history-btn delete-btn" onclick="deleteHistoryItem(${index})">
-                    🗑️ 삭제
-                </button>
-            </div>
-        </div>
-    `).join('');
-}
+//     historyList.innerHTML = history.map((item, index) => `
+//         <div class="history-item">
+//             <div class="history-info">
+//                 <div class="history-title">${item.title}</div>
+//                 <div class="history-meta">
+//                     생성일: ${item.date} | 지문 수: ${item.passageCount}개
+//                 </div>
+//             </div>
+//             <div class="history-actions-btn">
+//                 <button class="history-btn download-btn" onclick="downloadHistoryPDF(${index})">
+//                     📥 PDF 다운로드
+//                 </button>
+//                 <button class="history-btn delete-btn" onclick="deleteHistoryItem(${index})">
+//                     🗑️ 삭제
+//                 </button>
+//             </div>
+//         </div>
+//     `).join('');
+// }
 
-// 히스토리에서 PDF 다운로드
-async function downloadHistoryPDF(index) {
-    const item = historyData[index];
+// // 히스토리에서 PDF 다운로드
+// async function downloadHistoryPDF(index) {
+//     const item = historyData[index];
     
-    if (!item || !item.jsonData) {
-        alert('데이터를 찾을 수 없습니다.');
-        return;
-    }
+//     if (!item || !item.jsonData) {
+//         alert('데이터를 찾을 수 없습니다.');
+//         return;
+//     }
     
-    try {
-        // JSON → HTML 변환
-        const htmlResults = {};
+//     try {
+//         // JSON → HTML 변환
+//         const htmlResults = {};
         
-        for (let i = 0; i < item.passageCount; i++) {
-            // renderAllTypes 함수 재사용
-            const results = renderAllTypes(item.jsonData);
+//         for (let i = 0; i < item.passageCount; i++) {
+//             // renderAllTypes 함수 재사용
+//             const results = renderAllTypes(item.jsonData);
             
-            for (const [type, html] of Object.entries(results)) {
-                htmlResults[`${type}_passage${i}`] = {
-                    type: type,
-                    title: type.replace(/_/g, ' '),
-                    content: html,
-                    passageNum: i
-                };
-            }
-        }
+//             for (const [type, html] of Object.entries(results)) {
+//                 htmlResults[`${type}_passage${i}`] = {
+//                     type: type,
+//                     title: type.replace(/_/g, ' '),
+//                     content: html,
+//                     passageNum: i
+//                 };
+//             }
+//         }
         
-        // HTML 생성
-        const html = generatePreviewHTML(htmlResults, item.passageCount, item.selectedTypes);
+//         // HTML 생성
+//         const html = generatePreviewHTML(htmlResults, item.passageCount, item.selectedTypes);
         
-        // PDF 다운로드
-        const response = await fetch('/api/generate-pdf', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                htmlContent: html
-            })
-        });
+//         // PDF 다운로드
+//         const response = await fetch('/api/generate-pdf', {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json'
+//             },
+//             body: JSON.stringify({
+//                 htmlContent: html
+//             })
+//         });
         
-        if (response.ok) {
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${item.title}_${new Date().toISOString().slice(0,10)}.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
+//         if (response.ok) {
+//             const blob = await response.blob();
+//             const url = window.URL.createObjectURL(blob);
+//             const a = document.createElement('a');
+//             a.href = url;
+//             a.download = `${item.title}_${new Date().toISOString().slice(0,10)}.pdf`;
+//             document.body.appendChild(a);
+//             a.click();
+//             window.URL.revokeObjectURL(url);
+//             document.body.removeChild(a);
             
-            alert('✅ PDF 다운로드 완료!');
-        }
+//             alert('✅ PDF 다운로드 완료!');
+//         }
         
-    } catch (error) {
-        console.error('PDF 다운로드 오류:', error);
-        alert('PDF 다운로드 중 오류가 발생했습니다.');
-    }
-}
+//     } catch (error) {
+//         console.error('PDF 다운로드 오류:', error);
+//         alert('PDF 다운로드 중 오류가 발생했습니다.');
+//     }
+// }
 
-// 히스토리 항목 삭제
-function deleteHistoryItem(index) {
-    if (!confirm('이 항목을 삭제하시겠습니까?')) {
-        return;
-    }
+// // 히스토리 항목 삭제
+// function deleteHistoryItem(index) {
+//     if (!confirm('이 항목을 삭제하시겠습니까?')) {
+//         return;
+//     }
     
-    let history = JSON.parse(localStorage.getItem('worksheet_history') || '[]');
-    history.splice(index, 1);
-    localStorage.setItem('worksheet_history', JSON.stringify(history));
+//     let history = JSON.parse(localStorage.getItem('worksheet_history') || '[]');
+//     history.splice(index, 1);
+//     localStorage.setItem('worksheet_history', JSON.stringify(history));
     
-    loadHistory();
-}
+//     loadHistory();
+// }
 
-// 전체 히스토리 삭제
-function clearAllHistory() {
-    if (!confirm('모든 히스토리를 삭제하시겠습니까?')) {
-        return;
-    }
+// // 전체 히스토리 삭제
+// function clearAllHistory() {
+//     if (!confirm('모든 히스토리를 삭제하시겠습니까?')) {
+//         return;
+//     }
     
-    localStorage.removeItem('worksheet_history');
-    loadHistory();
-}
+//     localStorage.removeItem('worksheet_history');
+//     loadHistory();
+// }

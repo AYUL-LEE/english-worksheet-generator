@@ -3,6 +3,13 @@
 // 01_문단개요.html
 export function render01_문단개요(data) {
     const { passage, type_01_문단개요, type_03_본문노트_의역 } = data;
+
+      const sentenceList =     type_03_본문노트_의역?.sentences
+      ?.map((s) => s.english?.trim())
+      .filter(Boolean)
+      .join("<br>") || type_01_문단개요?.본문학습 || "";
+
+      console.log(sentenceList);
   
   return `
 <!DOCTYPE html>
@@ -10,7 +17,7 @@ export function render01_문단개요(data) {
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>문단개요 - ${passage.korean_title}</title>
+<title>본문노트 - ${passage.korean_title}</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   @page { size: A4; margin: 12mm; }
@@ -43,7 +50,7 @@ export function render01_문단개요(data) {
 </head>
 <body>
   <div class="header">
-    <h1>문단개요</h1>
+    <h1>본문노트</h1>
     <div class="header-right">평택 베리타스학원</div>
   </div>
   
@@ -57,11 +64,11 @@ export function render01_문단개요(data) {
     <div class="section-content">
            <p><strong>본문을 있는 그대로 읽어보면서 중요한 부분을 확인해보세요.</strong></p>
             <br>
-      <div class="text-content">${type_01_문단개요.본문학습.replace(/\.\s+/g, '.<br><br>')}</div>
+      <div class="text-content">${sentenceList}</div>
        <div class="text-content">
   ${(data.type_03_본문노트_의역?.sentences ?? [])
     .map(s => s.korean_natural)
-    .join(' ')}
+    .join('')}
 </div>
       </div>
   </div>
@@ -88,76 +95,11 @@ export function render01_문단개요(data) {
       </div>
     </div>
   </div>
-  
-  <div class="content-section">
-    <h3 class="section-header">| 예상문제</h3>
-    <div class="section-content">
-      <div class="expected-questions">
-        ${type_01_문단개요.예상문제.map(q => `<span class="question-tag">${q}</span>`).join('')}
-      </div>
-    </div>
-  </div>
 </body>
 </html>
   `;
 }
 
-// 02_본문노트_직독직해.html
-export function render02_본문노트_직독직해(data) {
-  const { passage, type_02_본문노트_직독직해 } = data;
-  
-  return `
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>본문노트(직독직해) - ${passage.korean_title}</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-  @page { size: A4; margin: 12mm; }
-  * { margin:0; padding:0; box-sizing:border-box; font-size:11px !important; }
-  body { font-family:'Inter','Noto Sans KR',sans-serif; width:210mm; min-height:297mm; margin:0 auto; padding:12mm; background:#ffffff; line-height:1.3; }
-  
-  .header { background:linear-gradient(135deg,#1E40AF,#3B82F6); color:#fff; padding:12px 20px; border-radius:6px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; }
-  .header h1 { font-size:14px !important; font-weight:700; margin:0; }
-  .header-right { font-size:10px !important; text-transform:uppercase; letter-spacing:1px; opacity:.9; }
-  
-  .sentence-row { margin-bottom:12px; border-radius:4px; overflow:hidden; border:1px solid #E2E8F0; }
-  .sentence-content { display:grid; grid-template-columns:6fr 4fr; }
-  .english-side { background:#fff; padding:12px 15px; border-right:1px solid #E2E8F0; display:flex; align-items:flex-start; gap:8px; min-height:80px; }
-  .korean-side { background:#F0F8FF; padding:12px 15px; display:flex; align-items:center; min-height:80px; }
-  
-  .sentence-number { background:#1E40AF; color:#fff; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:10px !important; flex-shrink:0; margin-top:2px; }
-  .english-text { color:#1F2937; line-height:1.6; font-weight:500; }
-  .korean-text { color:#1E40AF; line-height:1.6; font-weight:500; }
-  
-  @media print { body { padding:10mm; } .sentence-row { break-inside:avoid; margin-bottom:8px; } }
-</style>
-</head>
-<body>
-  <div class="header">
-    <h1>본문노트 (직독직해)</h1>
-    <div class="header-right">평택 베리타스학원</div>
-  </div>
-  
-  ${type_02_본문노트_직독직해.sentences.map(s => `
-  <div class="sentence-row">
-    <div class="sentence-content">
-      <div class="english-side">
-        <div class="sentence-number">${String(s.num).padStart(2, '0')}</div>
-        <div class="english-text">${s.english}</div>
-      </div>
-      <div class="korean-side">
-        <div class="korean-text">${s.korean_slash || s.korean || ''}</div>
-      </div>
-    </div>
-  </div>
-  `).join('')}
-</body>
-</html>
-  `;
-}
 
 // 03_본문노트_의역.html
 export function render03_본문노트_의역(data) {
@@ -169,7 +111,7 @@ export function render03_본문노트_의역(data) {
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>본문노트(의역) - ${passage.korean_title}</title>
+<title>문장분석 - ${passage.korean_title}</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   @page { size: A4; margin: 12mm; }
@@ -194,7 +136,7 @@ export function render03_본문노트_의역(data) {
 </head>
 <body>
   <div class="header">
-    <h1>본문노트 (의역)</h1>
+    <h1>문장분석</h1>
     <div class="header-right">평택 베리타스학원</div>
   </div>
   
@@ -224,7 +166,7 @@ export function render04_문장분석(data) {
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>문장분석 - ${type_04_문장분석.meta?.source_title || passage.korean_title}</title>
+<title>문장해석 - ${type_04_문장분석.meta?.source_title || passage.korean_title}</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   @page { size: A4; margin: 12mm; }
@@ -259,7 +201,7 @@ export function render04_문장분석(data) {
 </head>
 <body>
   <div class="header">
-    <h1>문장분석</h1>
+    <h1>문장해석</h1>
     <div class="header-right">평택 베리타스학원</div>
   </div>
   
@@ -581,7 +523,7 @@ export function render09_한줄해석(data) {
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>한줄해석 - ${passage.korean_title}</title>
+<title>국문쓰기- ${passage.korean_title}</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   @page { size: A4; margin: 12mm; }
@@ -604,7 +546,7 @@ export function render09_한줄해석(data) {
 </head>
 <body>
   <div class="header">
-    <h1>한줄해석</h1>
+    <h1>국문쓰기</h1>
     <div class="header-right">평택 베리타스학원</div>
   </div>
   
@@ -622,18 +564,66 @@ export function render09_한줄해석(data) {
   `;
 }
 
+
+// 10_영문쓰기.html
+export function render10_영문쓰기(data) {
+  const { passage, type_09_한줄해석 } = data;
+  
+  return `
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>영문쓰기 - ${passage.korean_title}</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4; margin: 12mm; }
+  * { margin:0; padding:0; box-sizing:border-box; font-size:11px !important; }
+  body { font-family:'Inter','Noto Sans KR',sans-serif; width:210mm; min-height:297mm; margin:0 auto; padding:12mm; background:#ffffff; line-height:1.45; color:#1f2937; }
+  
+  .header { background:linear-gradient(135deg,#1E40AF,#3B82F6); color:#fff; padding:12px 20px; border-radius:6px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; }
+  .header h1 { font-size:14px !important; font-weight:700; margin:0; }
+  .header-right { font-size:10px !important; text-transform:uppercase; letter-spacing:1px; opacity:.9; }
+  
+  .item { border:1px solid #E2E8F0; border-radius:8px; overflow:hidden; margin-bottom:14px; display:flex; flex-direction:column; }
+  .item-head { display:flex; align-items:flex-start; gap:8px; padding:8px 12px; background:#F8FAFF; border-bottom:1px dashed #E2E8F0; }
+  .num { background:#1E40AF; color:#fff; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; flex-shrink:0; }
+  .eng { color:#111827; font-weight:600; font-size:13px !important; flex:1; }
+  .write-area { position:relative; min-height:50px; margin:0 14px 10px 14px; }
+  .write-line { position:absolute; bottom:0; left:0; right:0; border-top:2px solid #CBD5E1; }
+  
+  @media print { body { padding:10mm; } .item { break-inside:avoid; } }
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>영문쓰기</h1>
+    <div class="header-right">평택 베리타스학원</div>
+  </div>
+  
+  ${type_09_한줄해석.sentences.map(s => `
+  <div class="item">
+    <div class="item-head">
+      <div class="num">${String(s.num).padStart(2, '0')}</div>
+      <div class="eng">${s.korean}</div>
+    </div>
+    <div class="write-area"><div class="write-line"></div></div>
+  </div>
+  `).join('')}
+</body>
+</html>
+  `;
+}
+
 // 전체 HTML 생성 (모든 유형 합치기)
 export function renderAllTypes(jsonData) {
   return {
     '01_문단개요': render01_문단개요(jsonData),
-    '02_본문노트_직독직해': render02_본문노트_직독직해(jsonData),
-    '03_본문노트_의역': render03_본문노트_의역(jsonData),
-    '04_문장분석': render04_문장분석(jsonData),
-    '05_어순배열': render05_어순배열(jsonData),
-    '06_단어': render06_단어(jsonData),
-    '07_구문': render07_구문(jsonData),
+    '03_본문노트_의역': render03_본문노트_의역(jsonData), 
     '08_핵심어휘': render08_핵심어휘(jsonData),
     '09_한줄해석': render09_한줄해석(jsonData),
+    '10_영문쓰기': render10_영문쓰기(jsonData),
     // TODO: 03~08 추가
   };
 }

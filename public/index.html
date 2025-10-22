@@ -21,7 +21,7 @@
                     <label for="apiKey">OpenAI API 키:</label>
                     <input type="password" id="apiKey" placeholder="sk-..." />
                 </div>
-                <div class="input-group">
+                <!-- <div class="input-group">
                     <label for="model">모델 선택:</label>
 <select id="model">
     <option value="gpt-4o-mini">GPT-4o Mini (저렴, 128k)</option>
@@ -30,11 +30,12 @@
     <option value="gpt-4">GPT-4 (8k)</option>
     <option value="gpt-3.5-turbo">GPT-3.5 Turbo (16k)</option>
 </select>
-                </div>
+                </div> -->
+            
             </div>
         </section>
-
-        <!-- 설정 섹션 아래에 추가 -->
+<!-- 
+        설정 섹션 아래에 추가
 <section class="dev-mode-section" style="background:#FFF3CD; padding:15px; border-radius:8px; margin-bottom:20px;">
     <h3 style="color:#856404; margin-bottom:10px;">🔧 개발 모드</h3>
     <div style="display:flex; gap:10px;">
@@ -42,7 +43,7 @@
 <button id="loadJson" class="select-btn">📂 JSON 불러오기</button>
         <input type="file" id="jsonFileInput" accept=".json" style="display:none;">
     </div>
-</section>
+</section> -->
 
         <!-- 지문 입력 섹션 -->
         <section class="passage-section">
@@ -77,44 +78,53 @@ Environmental protection is becoming increasingly important..."
     
     <!-- 분석서 카테고리 -->
     <div class="category">
-        <h3 class="category-title">📊 분석서</h3>
         <div class="types-grid">
             <label class="type-checkbox">
-                <input type="checkbox" id="type01" >
-                <span>문단개요</span>
-                <small>제목, 구성, 문단요약, 예상문제</small>
+                <input type="checkbox" id="type01" checked>
+                <span>본문노트</span>
+                <small>제목, 본문, 문단요약</small>
             </label>
 
-            <label class="type-checkbox">
+            <!-- <label class="type-checkbox">
                 <input type="checkbox" id="type02">
                 <span>본문노트(직독직해)</span>
                 <small>영어 순서대로 해석 연습</small>
-            </label>
+            </label> -->
 
             <label class="type-checkbox">
-                <input type="checkbox" id="type03">
-                <span>본문노트(의역)</span>
+                <input type="checkbox" id="type03" checked>
+                <span>문장해석</span>
                 <small>자연스러운 한글 해석</small>
             </label>
             
-            <label class="type-checkbox">
+            <!-- <label class="type-checkbox">
                 <input type="checkbox" id="type04" >
                 <span>문장분석</span>
                 <small>구문분석, 문법포인트</small>
-            </label>
+            </label> -->
             
             <label class="type-checkbox">
-                <input type="checkbox" id="type08" >
+                <input type="checkbox" id="type08" checked>
                 <span>핵심어휘</span>
                 <small>동의어, 반의어 포함</small>
             </label>
             
+            <label class="type-checkbox">
+                <input type="checkbox" id="type09" checked>
+                <span>국문쓰기</span>
+                <small>영어 문장을 보고 한글로 쓰기</small>
+            </label>
 
+            <label class="type-checkbox">
+                <input type="checkbox" id="type10" checked>
+                <span>영문쓰기</span>
+                <small>한글 문장을 보고 영어로 쓰기</small>
+                </label>
         </div>
     </div>
-
-    <!-- 워크북 카테고리 -->
-    <div class="category">
+<!-- 
+    워크북 카테고리 -->
+    <!-- <div class="category">
         <h3 class="category-title">📝 워크북</h3>
         <div class="types-grid">           
             <label class="type-checkbox">
@@ -141,13 +151,13 @@ Environmental protection is becoming increasingly important..."
                 <small>영어 문장 ↔ 한글 번역</small>
             </label>
         </div>
-    </div>
+    </div> --> 
 
     <!-- 전체 선택/해제 버튼 -->
     <div class="select-all-section">
-        <button id="selectAllAnalysis" class="select-btn">분석서 전체 선택</button>
-        <button id="selectAllWorkbook" class="select-btn">워크북 전체 선택</button>
-        <button id="deselectAll" class="select-btn deselect">전체 해제</button>
+        <button id="selectAllAnalysis" class="select-btn"> 전체 선택</button>
+        <!-- <button id="selectAllWorkbook" class="select-btn">워크북 전체 선택</button>
+        <button id="deselectAll" class="select-btn deselect">전체 해제</button> -->
     </div>
 </section>
 
@@ -163,17 +173,8 @@ Environmental protection is becoming increasingly important..."
             </div>
         </section>
 
-        <!-- 결과 섹션 위에 추가 -->
-<section class="history-section" id="historySection" style="display: none;">
-    <h2>📜 생성 기록</h2>
-    <div class="history-actions">
-        <button id="clearHistory" class="clear-btn">전체 삭제</button>
-    </div>
-    <div id="historyList" class="history-list"></div>
-</section>
-
-        <!-- 결과 섹션 -->
-        <section class="result-section" id="resultSection" style="display: none;">
+                <!-- 결과 섹션 -->
+        <section class="result-section" id="resultSection">
             <h2>📄 생성된 학습지</h2>
             <div class="result-actions">
                 <button id="downloadPdf" class="pdf-btn">PDF 다운로드</button>
@@ -181,6 +182,17 @@ Environmental protection is becoming increasingly important..."
             </div>
             <div id="generationSummary" class="generation-summary"></div>
         </section>
+<!-- 
+        결과 섹션 위에 추가 -->
+<!-- <section class="history-section" id="historySection" style="display: none;">
+    <h2>📜 생성 기록</h2>
+    <div class="history-actions">
+        <button id="clearHistory" class="clear-btn">전체 삭제</button>
+    </div>
+    <div id="historyList" class="history-list"></div>
+</section> --> 
+
+
 
         <!-- 미리보기 모달 -->
         <div id="previewModal" class="modal" style="display: none;">
