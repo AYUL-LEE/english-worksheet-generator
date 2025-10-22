@@ -7,6 +7,5 @@
     { "src": "/api/(.*)", "dest": "/api/$1.js" },
     { "src": "/(.*)", "dest": "/public/$1" }
   ],
-  "engines": { "node": "20.x" },
   "outputDirectory": "public"
 }
