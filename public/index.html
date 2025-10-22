@@ -34,6 +34,20 @@
             </div>
         </section>
 
+        <!-- 설정 섹션 아래에 추가 -->
+<section class="dev-mode-section" style="background:#FFF3CD; padding:15px; border-radius:8px; margin-bottom:20px;">
+    <h3 style="color:#856404; margin-bottom:10px;">🔧 개발 모드</h3>
+    <div style="display:flex; gap:10px;">
+        <button id="saveJson" class="action-btn secondary">
+            💾 JSON 저장
+        </button>
+        <button id="loadJson" class="action-btn secondary">
+            📂 JSON 불러오기
+        </button>
+        <input type="file" id="jsonFileInput" accept=".json" style="display:none;">
+    </div>
+</section>
+
         <!-- 지문 입력 섹션 -->
         <section class="passage-section">
             <h2>📝 지문 입력</h2>
@@ -70,47 +84,43 @@ Environmental protection is becoming increasingly important..."
         <h3 class="category-title">📊 분석서</h3>
         <div class="types-grid">
             <label class="type-checkbox">
-                <input type="checkbox" id="type01" checked>
+                <input type="checkbox" id="type01" >
                 <span>문단개요</span>
                 <small>제목, 구성, 문단요약, 예상문제</small>
             </label>
-            
-            <label class="type-checkbox">
-                <input type="checkbox" id="type04" checked>
-                <span>문장분석</span>
-                <small>구문분석, 문법포인트</small>
-            </label>
-            
-            <label class="type-checkbox">
-                <input type="checkbox" id="type08" checked>
-                <span>핵심어휘</span>
-                <small>동의어, 반의어 포함</small>
-            </label>
-            
-            <label class="type-checkbox">
-                <input type="checkbox" id="type09" checked>
-                <span>한줄해석</span>
-                <small>영어 문장 ↔ 한글 번역</small>
-            </label>
-        </div>
-    </div>
 
-    <!-- 워크북 카테고리 -->
-    <div class="category">
-        <h3 class="category-title">📝 워크북</h3>
-        <div class="types-grid">
             <label class="type-checkbox">
                 <input type="checkbox" id="type02">
                 <span>본문노트(직독직해)</span>
                 <small>영어 순서대로 해석 연습</small>
             </label>
-            
+
             <label class="type-checkbox">
                 <input type="checkbox" id="type03">
                 <span>본문노트(의역)</span>
                 <small>자연스러운 한글 해석</small>
             </label>
             
+            <label class="type-checkbox">
+                <input type="checkbox" id="type04" >
+                <span>문장분석</span>
+                <small>구문분석, 문법포인트</small>
+            </label>
+            
+            <label class="type-checkbox">
+                <input type="checkbox" id="type08" >
+                <span>핵심어휘</span>
+                <small>동의어, 반의어 포함</small>
+            </label>
+            
+
+        </div>
+    </div>
+
+    <!-- 워크북 카테고리 -->
+    <div class="category">
+        <h3 class="category-title">📝 워크북</h3>
+        <div class="types-grid">           
             <label class="type-checkbox">
                 <input type="checkbox" id="type05">
                 <span>어순배열</span>
@@ -125,8 +135,14 @@ Environmental protection is becoming increasingly important..."
             
             <label class="type-checkbox">
                 <input type="checkbox" id="type07">
-                <span>구문 분석</span>
-                <small>상세한 문법 설명</small>
+                <span>필사 연습</span>
+                <small>따라쓰기 연습</small>
+            </label>
+
+            <label class="type-checkbox">
+                <input type="checkbox" id="type09" >
+                <span>한줄해석연습</span>
+                <small>영어 문장 ↔ 한글 번역</small>
             </label>
         </div>
     </div>
@@ -164,8 +180,8 @@ Environmental protection is becoming increasingly important..."
         <section class="result-section" id="resultSection" style="display: none;">
             <h2>📄 생성된 학습지</h2>
             <div class="result-actions">
-                <button id="downloadPdf" class="pdf-btn">📥 고품질 PDF 다운로드</button>
-                <button id="previewHtml" class="preview-btn">👁️ 미리보기</button>
+                <button id="downloadPdf" class="pdf-btn">PDF 다운로드</button>
+                <button id="downloadHtml" class="preview-btn">  HTML 다운로드  </button>
             </div>
             <div id="generationSummary" class="generation-summary"></div>
         </section>

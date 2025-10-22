@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const loadingDiv = document.getElementById('loading');
     const resultSection = document.getElementById('resultSection');
     const downloadPdfBtn = document.getElementById('downloadPdf');
-    const previewBtn = document.getElementById('previewHtml');
+   // const previewBtn = document.getElementById('previewHtml');
     const previewModal = document.getElementById('previewModal');
     const closeModal = document.getElementById('closeModal');
 
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
     passageInput.addEventListener('input', updatePassageCount);
     generateBtn.addEventListener('click', generateWorksheet);
     downloadPdfBtn.addEventListener('click', downloadPDF);
-    previewBtn.addEventListener('click', showPreview);
+   // previewBtn.addEventListener('click', showPreview);
     closeModal.addEventListener('click', hidePreview);
     
     // 전체 선택 버튼들
@@ -27,6 +27,17 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('deselectAll').addEventListener('click', deselectAll);
      // 히스토리 관련
     document.getElementById('clearHistory').addEventListener('click', clearAllHistory);
+
+    // DOMContentLoaded에 이벤트 추가
+document.getElementById('saveJson').addEventListener('click', saveJsonToFile);
+document.getElementById('loadJson').addEventListener('click', () => {
+    document.getElementById('jsonFileInput').click();
+});
+document.getElementById('jsonFileInput').addEventListener('change', loadJsonFromFile);
+
+
+    // DOMContentLoaded에 이벤트 추가
+document.getElementById('downloadHtml').addEventListener('click', downloadHTML);
     
     // 히스토리 로드
     loadHistory();
@@ -42,6 +53,108 @@ document.addEventListener('DOMContentLoaded', function() {
     loadSavedSettings();
     updatePassageCount();
 });
+
+
+// JSON 파일로 저장
+function saveJsonToFile() {
+    const debugData = localStorage.getItem('last_generated_json');
+    
+    if (!debugData) {
+        alert('생성된 JSON이 없습니다. 먼저 학습지를 생성하세요.');
+        return;
+    }
+    
+    const blob = new Blob([debugData], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `worksheet_debug_${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    
+    alert('✅ JSON 저장 완료!');
+}
+
+// JSON 파일 불러오기
+function loadJsonFromFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const jsonText = e.target.result;
+            const data = JSON.parse(jsonText);
+            
+            // localStorage에 저장
+            localStorage.setItem('last_generated_json', jsonText);
+            
+            // 즉시 렌더링
+            regenerateFromJson(data);
+            
+            alert('✅ JSON 불러오기 완료!');
+            
+        } catch (error) {
+            alert('JSON 파일 읽기 실패: ' + error.message);
+        }
+    };
+    reader.readAsText(file);
+    
+    // 파일 input 초기화
+    event.target.value = '';
+}
+
+// JSON에서 HTML 재생성
+function regenerateFromJson(jsonData) {
+    // renderAllTypes 함수 필요 - 서버에서만 있음!
+    // 해결: 서버 API 호출
+    
+    fetch('/api/regenerate-html', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            jsonData: jsonData
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            generatedResults = data.results;
+            generatedHTML = generatePreviewHTML(data.results, 1, {});
+            
+            document.getElementById('resultSection').style.display = 'block';
+            document.getElementById('generationSummary').textContent = '✅ JSON에서 재생성 완료!';
+        }
+    })
+    .catch(error => {
+        console.error('재생성 오류:', error);
+        alert('재생성 실패: ' + error.message);
+    });
+}
+
+// HTML 다운로드 함수
+function downloadHTML() {
+    if (!generatedHTML) {
+        alert('먼저 학습지를 생성해주세요.');
+        return;
+    }
+    
+    const blob = new Blob([generatedHTML], { type: 'text/html' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `영어학습지_${new Date().toISOString().slice(0,10)}.html`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    
+    alert('✅ HTML 다운로드 완료!');
+}
 
 // 지문 개수 업데이트 함수
 function updatePassageCount() {
@@ -175,6 +288,10 @@ async function generateWorksheet() {
         
     } catch (error) {
         // 에러 처리...
+    }finally {
+        // ⭐ 여기서 로딩 종료
+        document.getElementById('generateBtn').disabled = false;
+        document.getElementById('loading').style.display = 'none';
     }
     
 }
@@ -323,18 +440,22 @@ function hidePreview() {
 
 // 전체 선택 함수들도 수정
 function selectAllAnalysis() {
-    const analysisIds = ['type01', 'type04', 'type08', 'type09'];
+    const analysisIds = ['type01', 'type02', 'type03', 'type04', 'type08'];
+      const allChecked = analysisIds.every(id => document.getElementById(id)?.checked);
+    
     analysisIds.forEach(id => {
         const element = document.getElementById(id);
-        if (element) element.checked = true;
+        if (element) element.checked = !allChecked;  // 토글
     });
 }
 
 function selectAllWorkbook() {
-    const workbookIds = ['type02', 'type03', 'type05', 'type06', 'type07'];
+    const workbookIds = ['type05', 'type06', 'type07', 'type09'];
+    const allChecked = workbookIds.every(id => document.getElementById(id)?.checked);
+    
     workbookIds.forEach(id => {
         const element = document.getElementById(id);
-        if (element) element.checked = true;
+        if (element) element.checked = !allChecked;  // 토글
     });
 }
 

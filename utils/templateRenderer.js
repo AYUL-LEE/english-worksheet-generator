@@ -2,7 +2,7 @@
 
 // 01_문단개요.html
 export function render01_문단개요(data) {
-  const { passage, type_01_문단개요 } = data;
+    const { passage, type_01_문단개요, type_03_본문노트_의역 } = data;
   
   return `
 <!DOCTYPE html>
@@ -55,13 +55,22 @@ export function render01_문단개요(data) {
   <div class="content-section">
     <h3 class="section-header">| 본문학습</h3>
     <div class="section-content">
-      <div class="text-content">${type_01_문단개요.본문학습}</div>
-    </div>
+           <p><strong>본문을 있는 그대로 읽어보면서 중요한 부분을 확인해보세요.</strong></p>
+            <br>
+      <div class="text-content">${type_01_문단개요.본문학습.replace(/\.\s+/g, '.<br><br>')}</div>
+       <div class="text-content">
+  ${(data.type_03_본문노트_의역?.sentences ?? [])
+    .map(s => s.korean_natural)
+    .join(' ')}
+</div>
+      </div>
   </div>
   
   <div class="content-section">
     <h3 class="section-header">| 문단구성</h3>
     <div class="section-content structure-content">
+    <p><strong>본문을 구조화해서 서론/본론/결론의 내용을 파악해보세요.</strong></p>
+            <br>
       <p><strong>서론:</strong> ${type_01_문단개요.문단구성.서론}</p>
       <p><strong>본론:</strong> ${type_01_문단개요.문단구성.본론}</p>
       <p><strong>결론:</strong> ${type_01_문단개요.문단구성.결론}</p>
@@ -71,6 +80,8 @@ export function render01_문단개요(data) {
   <div class="content-section">
     <h3 class="section-header">| 문단요약</h3>
     <div class="section-content">
+    <p><strong>간략한 문장으로 요약한 본문내용을 정리해보세요.</strong></p>
+            <br>
       <div class="summary-box">
         <div class="summary-english">${type_01_문단개요.문단요약.영문}</div>
         <div class="summary-korean">${type_01_문단개요.문단요약.한글}</div>
@@ -204,8 +215,6 @@ export function render03_본문노트_의역(data) {
 </html>
   `;
 }
-
-// 04_문장분석.html
 export function render04_문장분석(data) {
   const { passage, type_04_문장분석 } = data;
   
@@ -215,7 +224,7 @@ export function render04_문장분석(data) {
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>문장분석 - ${passage.korean_title}</title>
+<title>문장분석 - ${type_04_문장분석.meta?.source_title || passage.korean_title}</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   @page { size: A4; margin: 12mm; }
@@ -227,16 +236,25 @@ export function render04_문장분석(data) {
   .header-right { font-size:10px !important; text-transform:uppercase; letter-spacing:1px; opacity:.9; }
   
   .sentence-row { margin-bottom:12px; border-radius:4px; overflow:hidden; border:1px solid #E2E8F0; }
-  .sentence-content { display:grid; grid-template-columns:8fr 2fr; }
+  .sentence-content { display:grid; grid-template-columns: 8fr 2fr; }
   .english-side { background:#fff; padding:12px 15px; border-right:1px solid #E2E8F0; display:flex; align-items:flex-start; gap:8px; }
   .korean-side { background:#F0F8FF; padding:12px 15px; display:flex; align-items:flex-start; font-size:9px !important; color:#1E40AF; }
   
   .sentence-number { background:#1E40AF; color:#fff; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:10px !important; flex-shrink:0; margin-top:2px; }
+  
   .english-text { font-size:11px !important; line-height:1.7; font-weight:500; }
   .korean-text { font-size:9px !important; line-height:1.6; font-weight:500; }
-  .grammar-point { color:#d90429; font-weight:700; margin-top:6px; font-size:10px !important; }
   
-  @media print { body { padding:10mm; } .sentence-row { break-inside:avoid; } }
+  .g { color:#d90429; font-weight:800; }
+  .dm { background:#ede9fe; padding:0 .25em; border-radius:6px; }
+  
+  .u { display:inline-flex; flex-direction:column; align-items:center; margin:0 2px; }
+  .u .w { border-bottom:2px solid #3B82F6; padding-bottom:1px; line-height:1.2; }
+  .u .l { font-size:9px !important; line-height:1; color:#334155; margin-top:1px; }
+  
+  .point-box { border-top:1px dashed #CBD5E1; background:#F9FAFB; padding:6px 10px; font-size:10px !important; color:#374151; }
+  
+  @media print { body { padding:10mm; } .sentence-row { break-inside:avoid; margin-bottom:8px; } }
 </style>
 </head>
 <body>
@@ -249,16 +267,31 @@ export function render04_문장분석(data) {
   <div class="sentence-row">
     <div class="sentence-content">
       <div class="english-side">
-        <div class="sentence-number">${String(s.num).padStart(2, '0')}</div>
+        <div class="sentence-number">${String(s.id).padStart(2, '0')}</div>
         <div>
-          <div class="english-text">${s.english}</div>
-          <div class="grammar-point">▸ ${s.grammar_point}</div>
+          <div class="english-text">
+            ${s.tokens ? s.tokens.map(t => {
+              const classes = ['u'];
+              if (t.red_highlight) classes.push('g');
+              const dmClass = t.is_discourse_marker ? ' dm' : '';
+              return `<span class="${classes.join(' ')}"><span class="w${dmClass}">${t.text}</span><span class="l">${t.label_ko}</span></span>`;
+            }).join(' ') : s.english}
+          </div>
         </div>
       </div>
-      <div class="korean-side">
-        <div class="korean-text">${s.korean}</div>
-      </div>
+      <div class="korean-side"><div class="korean-text">${s.korean}</div></div>
     </div>
+    ${s.points && s.points.length > 0 ? `
+    <div class="point-box">
+      ${s.points.map((p, idx) => {
+        if (p.type === 'vocab') {
+          return `① <strong>${p.headword}</strong> ${p.explain_ko} (유의: ${p.synonyms.join(' / ')} | 반의: ${p.antonyms.join(' / ')})`;
+        } else {
+          return `② <strong>${p.title}</strong> ${p.explain_ko}`;
+        }
+      }).join('<br>\n      ')}
+    </div>
+    ` : ''}
   </div>
   `).join('')}
 </body>
@@ -304,7 +337,7 @@ export function render05_어순배열(data) {
 <body>
   <div class="header">
     <h1>어순배열</h1>
-    <div class="header-right">평택 베리타스학원/div>
+    <div class="header-right">평택 베리타스학원</div>
   </div>
   
   ${type_05_어순배열.sentences.map(s => `

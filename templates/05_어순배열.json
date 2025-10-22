@@ -1,0 +1,31 @@
+[  {
+    "num": "01",
+    "hint": "평서문",
+    "bank": "Children today / are / \"safe\"",
+    "ko": "오늘날 아이들은 안전하다."
+  },
+  {
+    "num": "02",
+    "hint": "구성 동사 + 목적어 묶음",
+    "bank": "Their only worries / consist of / fights with their parents / going to school / and dealing with the list of activities / that they're signed up for",
+    "ko": "그들의 유일한 걱정은 부모와의 다툼, 학교에 가는 것, 등록된 활동을 처리하는 것이다."
+  },
+  {
+    "num": "03",
+    "hint": "의문문",
+    "bank": "But / what's / going on / ?",
+    "ko": "그런데 무슨 일이 벌어지고 있는 걸까?"
+  },
+  {
+    "num": "04",
+    "hint": "조건절 + 의문문",
+    "bank": "If / they're / \"safe\" / and living / \"well,\" / why / do they experience / so many problems / ?",
+    "ko": "그들이 ‘안전’하고 ‘잘’ 산다면 왜 많은 문제를 겪을까?"
+  },
+  {
+    "num": "05",
+    "hint": "현재완료 + 관계사절",
+    "bank": "Children / have learned / to be cautious; / a lot of kids / have / even lost / that innate curiosity / that no one should ever lose",
+    "ko": "아이들은 조심하는 법을 배웠고; 많은 아이들은 타고난 호기심을 잃었다."
+  }
+]
