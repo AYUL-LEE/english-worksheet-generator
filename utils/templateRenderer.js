@@ -149,7 +149,7 @@ export function render02_본문노트_직독직해(data) {
         <div class="english-text">${s.english}</div>
       </div>
       <div class="korean-side">
-        <div class="korean-text">${s.korean_slash}</div>
+        <div class="korean-text">${s.korean_slash || s.korean || ''}</div>
       </div>
     </div>
   </div>
@@ -347,7 +347,7 @@ export function render05_어순배열(data) {
       <div class="hint">${s.hint}</div>
     </div>
     <div class="item-body">
-      <div class="bank">${s.word_bank}</div>
+      <div class="bank">${s.word_bank || ''}</div>
       <div class="answer-line"></div>
       <div class="answer-line"></div>
     </div>
@@ -417,7 +417,7 @@ export function render06_단어(data) {
       const rightWord = rightWords[idx];
       return `
     <tr>
-      <td>${String(word.num).padStart(2, '0')}</td>
+      <td>${word.num ? String(word.num).padStart(2, '0') : ''}</td>
       <td><span class="chip-pos">${word.pos}</span>${word.word}</td>
       <td>${word.meaning}</td>
       ${rightWord ? `
@@ -478,7 +478,7 @@ export function render07_구문(data) {
   ${type_07_구문.sentences.map(s => `
   <div class="item">
     <div class="item-head">
-      <div class="num">${String(s.num).padStart(2, '0')}</div>
+      <div class="num">${String(s.num || s.id || s.index || '').padStart(2, '0')}</div>
     </div>
     <div class="item-body">
       <div class="english">${s.english}</div>

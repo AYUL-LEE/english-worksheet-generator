@@ -280,7 +280,7 @@ JSON만 출력하세요.`;
         model: model,
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
-        max_tokens: 8000
+        max_tokens: 12000
       });
 
       let jsonText = completion.choices[0].message.content.trim();
