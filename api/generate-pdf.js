@@ -1,4 +1,5 @@
 import puppeteer from "puppeteer-core";
+import os from "os";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -12,8 +13,21 @@ export default async function handler(req, res) {
 
   let browser;
   try {
+    // 🧩 로컬에서는 내 PC의 Chrome 실행 경로 지정
+    let executablePath;
+    const platform = os.platform();
+
+    if (platform === "win32") {
+      executablePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+    } else if (platform === "darwin") {
+      executablePath = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+    } else {
+      executablePath = "/usr/bin/chromium-browser"; // Linux or Vercel
+    }
+
     browser = await puppeteer.launch({
       headless: true,
+      executablePath,
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
