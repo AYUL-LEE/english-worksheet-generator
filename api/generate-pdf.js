@@ -29,6 +29,7 @@ export default async function handler(req, res) {
 
     // ✅ 3️⃣ 런타임 정보 전부 출력
     console.log('----- 🧭 RUNTIME INFO START -----');
+        console.log('----- 🧭 RUNTIME INFO START -----');
     console.log('Node version:', process.version);
     console.log('Platform:', process.platform);
     console.log('Architecture:', process.arch);
@@ -66,7 +67,7 @@ export default async function handler(req, res) {
     res.setHeader('Content-Disposition', 'inline; filename="worksheet.pdf"');
     res.end(pdfBuffer);
 
-  } catch (err) {
+  } catch (err) { 
     console.error('❌ PDF 생성 에러 발생:', err);
     if (browser) await browser.close();
     res.status(500).json({ error: err.message });
