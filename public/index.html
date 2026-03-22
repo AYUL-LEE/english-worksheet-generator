@@ -18,6 +18,10 @@
             <h2>🔧 API 설정</h2>
             <div class="config-grid">
                 <div class="input-group">
+                    <label for="pageTitle">학습지 제목:</label>
+                    <input type="text" id="pageTitle" value="리얼고 1학년 26년 1학기 중간고사 대비" />
+                </div>
+                <div class="input-group">
                     <label for="apiKey">OpenAI API 키:</label>
                     <input type="password" id="apiKey" placeholder="sk-..." />
                 </div>
@@ -34,7 +38,17 @@
             
             </div>
         </section>
-<!-- 
+
+        <!-- 개발 테스트: 샘플 PDF -->
+        <section style="background:#F0FDF4; border:1px solid #86EFAC; border-radius:8px; padding:14px 18px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+            <div>
+                <strong style="color:#166534; font-size:13px;">🧪 PDF 레이아웃 테스트</strong>
+                <p style="color:#4B7A5B; font-size:11px; margin:3px 0 0;">AI 없이 샘플 데이터로 PDF 생성 — 토큰 소모 없음</p>
+            </div>
+            <button onclick="downloadSamplePDF()" style="background:#16A34A; color:#fff; border:none; border-radius:6px; padding:8px 18px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">샘플 PDF 다운로드</button>
+        </section>
+
+<!--
         설정 섹션 아래에 추가
 <section class="dev-mode-section" style="background:#FFF3CD; padding:15px; border-radius:8px; margin-bottom:20px;">
     <h3 style="color:#856404; margin-bottom:10px;">🔧 개발 모드</h3>
@@ -111,47 +125,37 @@ Environmental protection is becoming increasingly important..."
             
             <label class="type-checkbox">
                 <input type="checkbox" id="type09" checked>
-                <span>국문쓰기</span>
+                <span>한줄해석</span>
                 <small>영어 문장을 보고 한글로 쓰기</small>
             </label>
-
-            <label class="type-checkbox">
-                <input type="checkbox" id="type10" checked>
-                <span>영문쓰기</span>
-                <small>한글 문장을 보고 영어로 쓰기</small>
-                </label>
         </div>
     </div>
-<!-- 
-    워크북 카테고리 -->
-    <!-- <div class="category">
+    <div class="category">
         <h3 class="category-title">📝 워크북</h3>
-        <div class="types-grid">           
+        <div class="types-grid">
             <label class="type-checkbox">
-                <input type="checkbox" id="type05">
-                <span>어순배열</span>
-                <small>서술형 대비용</small>
+                <input type="checkbox" id="wb_어법선택" checked>
+                <span>어법선택</span>
+                <small>괄호 안에서 어법상 적절한 것 고르기</small>
             </label>
-            
             <label class="type-checkbox">
-                <input type="checkbox" id="type06">
-                <span>단어 연습</span>
-                <small>핵심 단어 암기</small>
+                <input type="checkbox" id="wb_어법수정" checked>
+                <span>어법수정</span>
+                <small>밑줄 친 어법 오류 고쳐 쓰기</small>
             </label>
-            
             <label class="type-checkbox">
-                <input type="checkbox" id="type07">
-                <span>필사 연습</span>
-                <small>따라쓰기 연습</small>
+                <input type="checkbox" id="wb_어휘선택" checked>
+                <span>어휘선택</span>
+                <small>괄호 안에서 문맥에 맞는 어휘 고르기</small>
             </label>
-
             <label class="type-checkbox">
-                <input type="checkbox" id="type09" >
-                <span>한줄해석연습</span>
-                <small>영어 문장 ↔ 한글 번역</small>
+                <input type="checkbox" id="wb_순서배열" checked>
+                <span>순서배열</span>
+                <small>문장을 올바른 순서로 배열하기</small>
             </label>
         </div>
-    </div> --> 
+        <button class="select-all-btn" id="selectAllWorkbook">전체 선택</button>
+    </div>
 
     <!-- 전체 선택/해제 버튼 -->
     <div class="select-all-section">

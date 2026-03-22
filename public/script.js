@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 전체 선택 버튼들
     document.getElementById('selectAllAnalysis').addEventListener('click', selectAllAnalysis);
-   // document.getElementById('selectAllWorkbook').addEventListener('click', selectAllWorkbook);
+    document.getElementById('selectAllWorkbook')?.addEventListener('click', selectAllWorkbook);
     // document.getElementById('deselectAll').addEventListener('click', deselectAll);
     //  // 히스토리 관련
     // document.getElementById('clearHistory').addEventListener('click', clearAllHistory);
@@ -207,7 +207,10 @@ function getSelectedTypes() {
         type07: safeCheck('type07'),
         type08: safeCheck('type08'),
         type09: safeCheck('type09'),
-        type10: safeCheck('type10')
+        wb_어법선택: safeCheck('wb_어법선택'),
+        wb_어법수정: safeCheck('wb_어법수정'),
+        wb_어휘선택: safeCheck('wb_어휘선택'),
+        wb_순서배열: safeCheck('wb_순서배열'),
     };
 }
 
@@ -227,6 +230,7 @@ function parsePassages() {
 // 학습지 생성
 async function generateWorksheet() {
     const apiKey = document.getElementById('apiKey').value.trim();
+    const pageTitle = document.getElementById('pageTitle')?.value.trim() || '리얼고 1학년 26년 1학기 중간고사 대비';
     const model = "gpt-4o-mini"; // ✅ 항상 고정
     const passages = parsePassages();
     const selectedTypes = getSelectedTypes();
@@ -261,7 +265,8 @@ async function generateWorksheet() {
                 passages,
                 apiKey,
                 model,
-                selectedTypes
+                selectedTypes,
+                pageTitle
             })
         });
         
@@ -347,27 +352,48 @@ function generatePreviewHTML(results, passageCount, selectedTypes) {
 `;
 
   // 지문별로 HTML 삽입
-  for (let passageIndex = 0; passageIndex < passageCount; passageIndex++) {
-    const types = [
-      '01_문단개요',
-      '03_본문노트_의역',   
-      '08_핵심어휘',
-      '09_한줄해석',
-      '10_영문쓰기'
-    ];
-    
-    for (let typeIndex = 0; typeIndex < types.length; typeIndex++) {
-      const type = types[typeIndex];
+  const perPassageTypes = [
+    '01_본문노트',
+    '03_문장해석',
+    '08_핵심어휘',
+    '09_한줄해석',
+  ];
+  const workbookTypes = [
+    '워크북_어법선택',
+    '워크북_어법수정',
+    '워크북_어휘선택',
+    '워크북_순서배열',
+  ];
+
+  // 유형 먼저, 지문 순서: 본문노트(지문1→지문2) → 문장해석(지문1→지문2) → ...
+  for (let typeIndex = 0; typeIndex < perPassageTypes.length; typeIndex++) {
+    const type = perPassageTypes[typeIndex];
+    for (let passageIndex = 0; passageIndex < passageCount; passageIndex++) {
       const key = `${type}_passage${passageIndex}`;
       const result = results[key];
-      
       if (result && result.content) {
         html += result.content;
-        
-        // 마지막 유형이 아니면 페이지 구분 추가
-        if (typeIndex < types.length - 1 || passageIndex < passageCount - 1) {
-          html += '<div class="page-break"></div>';
-        }
+        html += '<div class="page-break"></div>';
+      }
+    }
+    // 핵심어휘 블록 바로 뒤에 단어테스트 삽입
+    if (type === '08_핵심어휘') {
+      const dtResult = results['단어테스트'];
+      if (dtResult && dtResult.content) {
+        html += dtResult.content;
+        html += '<div class="page-break"></div>';
+      }
+    }
+  }
+
+  // 워크북 유형 (전체 지문 합산, 한 번만 출력)
+  for (let typeIndex = 0; typeIndex < workbookTypes.length; typeIndex++) {
+    const type = workbookTypes[typeIndex];
+    const result = results[type];
+    if (result && result.content) {
+      html += result.content;
+      if (typeIndex < workbookTypes.length - 1) {
+        html += '<div class="page-break"></div>';
       }
     }
   }
@@ -418,6 +444,35 @@ a.download = `${title}_${date}.pdf`;
     }
 }
 
+// 샘플 PDF 다운로드 (AI 없이, 서버 목업 데이터 사용)
+async function downloadSamplePDF() {
+    const btn = event.target;
+    btn.textContent = '생성 중...';
+    btn.disabled = true;
+    try {
+        const response = await fetch('/api/preview-pdf');
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `샘플_학습지_${new Date().toISOString().slice(0,10)}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } else {
+            const err = await response.json();
+            alert('샘플 PDF 오류: ' + err.error);
+        }
+    } catch (error) {
+        alert('샘플 PDF 오류: ' + error.message);
+    } finally {
+        btn.textContent = '샘플 PDF 다운로드';
+        btn.disabled = false;
+    }
+}
+
 // 미리보기 표시 함수도 수정
 function showPreview() {
     if (!generatedHTML) {
@@ -451,7 +506,7 @@ function hidePreview() {
 
 // 전체 선택 함수들도 수정
 function selectAllAnalysis() {
-    const analysisIds = ['type01', 'type03', 'type08', 'type09', 'type10'];
+    const analysisIds = ['type01', 'type03', 'type08', 'type09'];
       const allChecked = analysisIds.every(id => document.getElementById(id)?.checked);
     
     analysisIds.forEach(id => {
@@ -461,12 +516,11 @@ function selectAllAnalysis() {
 }
 
 function selectAllWorkbook() {
-    const workbookIds = ['type05', 'type06', 'type07', 'type09'];
+    const workbookIds = ['wb_어법선택', 'wb_어법수정', 'wb_어휘선택', 'wb_순서배열'];
     const allChecked = workbookIds.every(id => document.getElementById(id)?.checked);
-    
     workbookIds.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) element.checked = !allChecked;  // 토글
+        const el = document.getElementById(id);
+        if (el) el.checked = !allChecked;
     });
 }
 

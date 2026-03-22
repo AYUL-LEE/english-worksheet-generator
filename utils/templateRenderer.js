@@ -2,19 +2,34 @@
 
 const CIRCLED_NUMS = ['①','②','③','④','⑤','⑥','⑦','⑧','⑨','⑩','⑪','⑫','⑬','⑭','⑮','⑯','⑰','⑱','⑲','⑳'];
 
-// 01_문단개요.html
-export function render01_문단개요(data, webtoonImageUrl = null) {
-  const { passage, type_01_문단개요, type_03_본문노트_의역 } = data;
+// Helper: parse grammar/vocabulary choice markup "1[opt1/opt2]" → styled HTML
+function parseChoiceMarkup(text) {
+  return (text || '').replace(/(\d+)\[([^\]]+)\]/g, (_, num, content) => {
+    const opts = content.split('/').map(s => s.trim()).join(' / ');
+    return `<span class="cw"><sup class="cn">${num}</sup>[${opts}]</span>`;
+  });
+}
 
-  const sentences = type_03_본문노트_의역?.sentences ?? [];
+// Helper: parse grammar correction markup "1[wrongword]" → underlined HTML
+function parseFixMarkup(text) {
+  return (text || '').replace(/(\d+)\[([^\]]+)\]/g, (_, num, content) => {
+    return `<span class="fw"><sup class="fn">${num}</sup><u>${content.trim()}</u></span>`;
+  });
+}
 
-  // 본문학습: ①②③ 넘버링 + 인라인(줄바꿈 없이)
+// 01_본문노트.html
+export function render01_본문노트(data, webtoonImageUrl = null, pageTitle = '') {
+  const { passage, type_01_본문노트, type_03_문장해석 } = data;
+
+  const sentences = type_03_문장해석?.sentences ?? [];
+
+  // 본문학습: 주황색 1,2,3 넘버링 + 인라인(줄바꿈 없이)
   const numberedText = sentences
-    .map((s, i) => `${CIRCLED_NUMS[i] || `(${i+1})`} ${s.english?.trim()}`)
+    .map((s, i) => `<span class="sent-num">${i+1}</span> ${s.english?.trim()}`)
     .join(' ');
 
   // 논리흐름 렌더링
-  const logicalFlow = type_01_문단개요?.논리흐름 ?? [];
+  const logicalFlow = type_01_본문노트?.논리흐름 ?? [];
   const logicalFlowHTML = logicalFlow.map((step, i) => `
     <div class="flow-item">
       <div class="flow-num">${i + 1}</div>
@@ -26,16 +41,9 @@ export function render01_문단개요(data, webtoonImageUrl = null) {
 
   // 웹툰 이미지 섹션
   const webtoonSection = webtoonImageUrl ? `
-  <div class="content-section">
-    <h3 class="section-header">| LOGICAL FLOW (논리 흐름)</h3>
-    <div class="section-content webtoon-content">
-      <img src="${webtoonImageUrl}" alt="4컷 웹툰 요약" style="width:100%;border-radius:4px;" />
-    </div>
-  </div>` : `
-  <div class="content-section">
-    <h3 class="section-header">| LOGICAL FLOW (논리 흐름)</h3>
-    <div class="section-content" style="text-align:center;color:#94A3B8;padding:20px;">이미지 생성 실패</div>
-  </div>`;
+  <div class="webtoon-wrapper">
+    <img src="${webtoonImageUrl}" alt="4컷 웹툰 요약" class="webtoon-img" />
+  </div>` : '';
 
   return `
 <!DOCTYPE html>
@@ -50,35 +58,35 @@ export function render01_문단개요(data, webtoonImageUrl = null) {
   * { margin:0; padding:0; box-sizing:border-box; font-size:11px !important; }
   body { font-family:'Inter','Noto Sans KR',sans-serif; width:210mm; min-height:297mm; margin:0 auto; padding:12mm; background:#ffffff; line-height:1.3; }
 
-  .header { background:linear-gradient(135deg,#1E40AF,#3B82F6); color:#fff; padding:12px 20px; border-radius:6px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; }
-  .header h1 { font-size:14px !important; font-weight:700; margin:0; }
-  .header-right { font-size:10px !important; text-transform:uppercase; letter-spacing:1px; opacity:.9; }
+  .page-header { border-bottom:2px solid #E87B2E; padding-bottom:6px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; }
+  .page-header .sub { font-size:9px; color:#E87B2E; font-weight:600; letter-spacing:.5px; }
+  .page-header .academy { font-size:9px; color:#888; }
 
-  .title-section { background:#F8FAFC; border:1px solid #E2E8F0; border-radius:6px; padding:12px; margin-bottom:15px; text-align:center; }
-  .title-korean { font-size:16px !important; font-weight:700; color:#1E293B; margin-bottom:6px; }
-  .title-english { font-size:12px !important; color:#64748B; font-style:italic; }
+  .title-section { background:#FFF8F3; border-left:3px solid #E87B2E; padding:8px 12px; margin-bottom:12px; border-radius:0 4px 4px 0; }
+  .title-korean { font-size:13px !important; font-weight:700; color:#1E293B; margin-bottom:3px; }
+  .title-english { font-size:10px !important; color:#888; font-style:italic; }
 
-  .content-section { margin-bottom:15px; }
-  .section-header { background:#1E40AF; color:#fff; padding:6px 12px; font-size:12px !important; font-weight:700; border-radius:4px 4px 0 0; margin:0; }
-  .section-content { border:1px solid #E2E8F0; border-top:none; padding:12px; border-radius:0 0 4px 4px; }
-
-  .text-content { line-height:2.2; color:#374151; padding:12px; background:#FEFEFE; border-radius:4px; font-weight:600; word-break:keep-all; }
+  .text-content { line-height:2.3; color:#374151; padding:12px; background:#FEFEFE; border-radius:4px; font-weight:600; word-break:keep-all; margin-bottom:12px; font-size:12px !important; }
+  .sent-num { color:#E87B2E; font-weight:700; }
+  .flow-section { margin-bottom:20px; }
 
   /* 논리흐름 */
-  .flow-item { display:flex; gap:10px; align-items:flex-start; padding:8px 0; border-bottom:1px solid #F1F5F9; }
+  .flow-item { display:flex; gap:10px; align-items:flex-start; padding:8px 0; border-bottom:1px solid #F5EDE6; }
   .flow-item:last-child { border-bottom:none; }
-  .flow-num { min-width:22px; height:22px; background:#1E40AF; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11px !important; flex-shrink:0; margin-top:1px; }
+  .flow-num { font-weight:700; color:#E87B2E; font-size:13px !important; flex-shrink:0; margin-top:1px; min-width:20px; }
   .flow-body { flex:1; }
   .flow-title { font-weight:700; color:#1E293B; margin-bottom:3px; font-size:11px !important; }
   .flow-desc { color:#475569; line-height:1.5; }
 
-  .webtoon-content { padding:8px; }
+  .webtoon-wrapper { width:100%; margin-top:4px; background:transparent; text-align:center; }
+  .webtoon-img { max-width:80%; display:inline-block; border-radius:4px; }
+  @media print { body { width:100% !important; margin:0 !important; padding:0 !important; } }
 </style>
 </head>
 <body>
-  <div class="header">
-    <h1>본문노트</h1>
-    <div class="header-right">평택 베리타스학원</div>
+  <div class="page-header">
+    <div class="sub">${pageTitle}  -  본문노트</div>
+    <div class="academy">평택 베리타스학원</div>
   </div>
 
   <div class="title-section">
@@ -86,18 +94,10 @@ export function render01_문단개요(data, webtoonImageUrl = null) {
     <div class="title-english">${passage.english_title}</div>
   </div>
 
-  <div class="content-section">
-    <h3 class="section-header">| 본문학습</h3>
-    <div class="section-content">
-      <div class="text-content">${numberedText}</div>
-    </div>
-  </div>
+  <div class="text-content">${numberedText}</div>
 
-  <div class="content-section">
-    <h3 class="section-header">| LOGICAL FLOW (논리 흐름)</h3>
-    <div class="section-content">
-      ${logicalFlowHTML}
-    </div>
+  <div class="flow-section">
+    ${logicalFlowHTML}
   </div>
 
   ${webtoonSection}
@@ -107,58 +107,99 @@ export function render01_문단개요(data, webtoonImageUrl = null) {
 }
 
 
-// 03_본문노트_의역.html
-export function render03_본문노트_의역(data) {
-  const { passage, type_03_본문노트_의역 } = data;
-  
+// 03_문장해석.html
+export function render03_문장해석(data, pageTitle = '') {
+  const { passage, type_03_문장해석, type_08_핵심어휘 } = data;
+  const sentences = type_03_문장해석?.sentences ?? [];
+  const passageCode = passage.original_text?.match(/[A-Z]\d+_\d+_\d+/)?.[0] ?? '';
+
+  const sentenceRows = sentences.map((s, i) => `
+  <div class="sentence-row">
+    <div class="num">${s.num}</div>
+    <div class="english-text">${s.english}</div>
+    <div class="korean-text">${s.korean_natural}</div>
+  </div>`).join('');
+
+  const vocab = type_08_핵심어휘?.words ?? [];
+  const wordsSection = vocab.length > 0 ? `
+  <div class="words-section">
+    <div class="words-header">| WORDS &amp; PHRASES</div>
+    <div class="words-grid">
+      ${vocab.map((w, i) => `
+      <div class="word-item">
+        <span class="word-num">(${i+1})</span>
+        <span class="word-headword">${w.word}</span>
+        <span class="word-pos">${w.pos ?? ''}</span>
+        <span class="word-meaning">${(w.meanings ?? [w.meaning ?? w.meaning_ko]).filter(Boolean).join(', ')}</span>
+      </div>`).join('')}
+    </div>
+  </div>` : '';
+
   return `
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>문장분석 - ${passage.korean_title}</title>
+<title>문장해석 - ${passage.korean_title}</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-  @page { size: A4; margin: 12mm; }
-  * { margin:0; padding:0; box-sizing:border-box; font-size:11px !important; }
-  body { font-family:'Inter','Noto Sans KR',sans-serif; width:210mm; min-height:297mm; margin:0 auto; padding:12mm; background:#ffffff; line-height:1.3; }
-  
-  .header { background:linear-gradient(135deg,#1E40AF,#3B82F6); color:#fff; padding:12px 20px; border-radius:6px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; }
-  .header h1 { font-size:14px !important; font-weight:700; margin:0; }
-  .header-right { font-size:10px !important; text-transform:uppercase; letter-spacing:1px; opacity:.9; }
-  
-  .sentence-row { margin-bottom:12px; border-radius:4px; overflow:hidden; border:1px solid #E2E8F0; }
-  .sentence-content { display:grid; grid-template-columns:6fr 4fr; }
-  .english-side { background:#fff; padding:12px 15px; border-right:1px solid #E2E8F0; display:flex; align-items:flex-start; gap:8px; min-height:80px; }
-  .korean-side { background:#F0F8FF; padding:12px 15px; display:flex; align-items:center; min-height:80px; }
-  
-  .sentence-number { background:#1E40AF; color:#fff; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:10px !important; flex-shrink:0; margin-top:2px; }
-  .english-text { color:#1F2937; line-height:1.6; font-weight:500; }
-  .korean-text { color:#1E40AF; line-height:1.6; font-weight:500; }
-  
-  @media print { body { padding:10mm; } .sentence-row { break-inside:avoid; } }
+  @page { size: A4; margin: 14mm 16mm; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter','Noto Sans KR',sans-serif; width:210mm; min-height:297mm; margin:0 auto; padding:14mm 16mm; background:#fff; color:#1a1a1a; font-size:11px; line-height:1.4; }
+
+  /* 상단 헤더 */
+  .page-header { border-bottom:2px solid #E87B2E; padding-bottom:6px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; }
+  .page-header .sub { font-size:9px; color:#E87B2E; font-weight:600; letter-spacing:.5px; }
+  .page-header .academy { font-size:9px; color:#888; }
+  .section-title { font-size:10px; font-weight:700; color:#1a1a1a; margin-bottom:2px; }
+  .section-title .code { color:#E87B2E; margin-right:6px; }
+  .section-title .korean { font-weight:700; }
+  .section-title .english { font-weight:400; color:#555; font-style:italic; }
+
+  /* 문장 행 */
+  .sentence-row { display:grid; grid-template-columns:28px 3fr 2fr; gap:0 12px; padding:13px 0; border-bottom:1px solid #F0F0F0; align-items:start; break-inside:avoid; }
+  .sentence-row:last-of-type { border-bottom:none; }
+  .num { font-size:10px; font-weight:700; color:#E87B2E; padding-top:1px; white-space:nowrap; }
+  .english-text { font-size:11px; line-height:1.75; font-weight:500; color:#111; word-break:keep-all; text-align:justify; }
+  .korean-text { font-size:9.5px; line-height:1.6; color:#444; word-break:keep-all; }
+
+  /* NOTE */
+  .note-section { margin-top:20px; border-top:1px dashed #CCC; padding-top:8px; }
+  .note-label { font-size:9px; font-weight:700; color:#888; letter-spacing:1px; margin-bottom:6px; }
+  .note-lines { height:28mm; border-bottom:1px solid #E0E0E0; }
+
+  /* WORDS & PHRASES */
+  .words-section { margin-top:18px; border-top:1.5px solid #1a1a1a; padding-top:8px; }
+  .words-header { font-size:9px; font-weight:700; letter-spacing:1px; color:#1a1a1a; margin-bottom:8px; }
+  .words-grid { display:grid; grid-template-columns:1fr 1fr; gap:4px 20px; }
+  .word-item { display:flex; gap:4px; align-items:baseline; font-size:9.5px; }
+  .word-num { color:#888; min-width:18px; }
+  .word-headword { font-weight:700; color:#E87B2E; margin-right:2px; }
+  .word-pos { color:#E87B2E; font-style:italic; margin-right:3px; font-size:9px; }
+  .word-meaning { color:#444; }
+
+  @media print { body { width:100% !important; margin:0 !important; padding:0 !important; } .sentence-row { break-inside:avoid; } }
 </style>
 </head>
 <body>
-  <div class="header">
-    <h1>문장분석</h1>
-    <div class="header-right">평택 베리타스학원</div>
+  <div class="page-header">
+    <div class="sub">${pageTitle}  -  문장해석</div>
+    <div class="academy">평택 베리타스학원</div>
   </div>
-  
-  ${type_03_본문노트_의역.sentences.map(s => `
-  <div class="sentence-row">
-    <div class="sentence-content">
-      <div class="english-side">
-        <div class="sentence-number">${String(s.num).padStart(2, '0')}</div>
-        <div class="english-text">${s.english}</div>
-      </div>
-      <div class="korean-side">
-        <div class="korean-text">${s.korean_natural}</div>
-      </div>
-    </div>
+  <div style="margin-bottom:8px;">
+    <div class="section-title"><span class="korean">${passage.korean_title}</span></div>
+    <div class="section-title"><span class="english">(${passage.english_title})</span></div>
   </div>
-  `).join('')}
+
+  ${sentenceRows}
+
+  <div class="note-section">
+    <div class="note-label">| NOTE</div>
+    <div class="note-lines"></div>
+  </div>
+
+  ${wordsSection}
 </body>
 </html>
   `;
@@ -444,9 +485,10 @@ export function render07_구문(data) {
 }
 
 // 08_핵심어휘.html
-export function render08_핵심어휘(data) {
+export function render08_핵심어휘(data, pageTitle = '') {
   const { passage, type_08_핵심어휘 } = data;
-  
+  const words = type_08_핵심어휘?.words ?? [];
+
   return `
 <!DOCTYPE html>
 <html lang="ko">
@@ -456,62 +498,68 @@ export function render08_핵심어휘(data) {
 <title>핵심어휘 - ${passage.korean_title}</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-  @page { size: A4; margin: 12mm; }
-  * { margin:0; padding:0; box-sizing:border-box; font-size:11px !important; }
-  body { font-family:'Inter','Noto Sans KR',sans-serif; width:210mm; min-height:297mm; margin:0 auto; padding:12mm; background:#ffffff; line-height:1.45; color:#1f2937; }
-  
-  .header { background:linear-gradient(135deg,#1E40AF,#3B82F6); color:#fff; padding:12px 20px; border-radius:6px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; }
-  .header h1 { font-size:14px !important; font-weight:700; margin:0; }
-  .header-right { font-size:10px !important; text-transform:uppercase; letter-spacing:1px; opacity:.9; }
-  
-  h2.subtitle { font-size:12px !important; margin:12px 0 8px; color:#1E40AF; }
-  
-  table { width:100%; border-collapse:collapse; margin-bottom:14px; table-layout:fixed; }
-  th, td { border:1px solid #E2E8F0; padding:8px; text-align:left; vertical-align:top; }
-  th { background:#F8FAFF; color:#1E40AF; font-weight:700; font-size:10px !important; }
-  td { font-size:10px !important; }
-  
-  .chip-pos { display:inline-block; background:#1E40AF; color:#fff; font-size:8px; padding:1px 4px; border-radius:999px; margin-right:6px; }
-  .chip-tag { display:inline-block; background:#E0E7FF; color:#1E40AF; font-size:9px; padding:2px 6px; border-radius:6px; margin-right:4px; }
-  .chip-anti { display:inline-block; background:#FFE4E6; color:#BE123C; font-size:9px; padding:2px 6px; border-radius:6px; margin-right:4px; }
-  
-  @media print { body { padding:10mm; } table { break-inside:avoid; } }
+  @page { size: A4; margin: 14mm 16mm; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter','Noto Sans KR',sans-serif; width:210mm; min-height:297mm; margin:0 auto; padding:14mm 16mm; background:#fff; color:#1a1a1a; font-size:11px; line-height:1.4; }
+
+  .page-header { border-bottom:2px solid #E87B2E; padding-bottom:6px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; }
+  .page-header .sub { font-size:9px; color:#E87B2E; font-weight:600; letter-spacing:.5px; }
+  .page-header .academy { font-size:9px; color:#888; }
+  .section-label { background:#FFF3E8; border-left:3px solid #E87B2E; padding:6px 10px; margin-bottom:12px; border-radius:0 4px 4px 0; }
+  .section-label .korean { font-weight:700; font-size:11px; color:#1a1a1a; }
+  .section-label .english { font-size:9.5px; color:#666; font-style:italic; margin-top:2px; }
+
+  table { width:100%; border-collapse:collapse; }
+  thead tr { border-bottom:2px solid #1a1a1a; }
+  th { font-size:10px; font-weight:700; color:#555; padding:6px 8px; text-align:left; }
+  tbody tr { border-bottom:1px solid #EBEBEB; }
+  tbody tr:last-child { border-bottom:none; }
+  td { padding:7px 8px; vertical-align:top; font-size:10.5px; }
+
+  .td-num { color:#999; width:32px; }
+  .td-word { width:110px; }
+  .word-en { font-weight:700; color:#E87B2E; font-size:11px; }
+  .word-pos { color:#999; font-style:italic; font-size:9px; margin-left:4px; }
+  .td-meaning { width:120px; color:#1a1a1a; }
+  .meaning-main { font-weight:600; }
+  .meaning-sub { color:#666; font-size:9.5px; }
+  .td-syn { color:#0D7A5F; }
+  .td-ant { color:#7C3AED; }
+
+  @media print { body { width:100% !important; margin:0 !important; padding:0 !important; } tbody tr { break-inside:avoid; } }
 </style>
 </head>
 <body>
-  <div class="header">
-    <h1>핵심어휘</h1>
-    <div class="header-right">평택 베리타스학원</div>
+  <div class="page-header">
+    <div class="sub">${pageTitle}  -  핵심어휘</div>
+    <div class="academy">평택 베리타스학원</div>
   </div>
-  
-  <h2 class="subtitle">${passage.korean_title}</h2>
   <table>
-    <colgroup>
-      <col style="width:5%">
-      <col style="width:18%">
-      <col style="width:22%">
-      <col style="width:25%">
-      <col style="width:25%">
-    </colgroup>
     <thead>
       <tr>
-        <th>No.</th>
-        <th>핵심어휘</th>
-        <th>뜻</th>
+        <th class="td-num">No.</th>
+        <th class="td-word">영어</th>
+        <th class="td-meaning">뜻</th>
         <th>동의어</th>
         <th>반의어</th>
       </tr>
     </thead>
     <tbody>
-      ${type_08_핵심어휘.words.map(w => `
+      ${words.map((w, i) => {
+        const meanings = w.meanings ?? (w.meaning ? [w.meaning] : []);
+        const [main, ...rest] = meanings;
+        return `
       <tr>
-        <td>${String(w.num).padStart(2, '0')}</td>
-        <td><span class="chip-pos">${w.pos}</span><strong>${w.word}</strong></td>
-        <td>${w.meaning}</td>
-        <td>${w.synonyms.map(s => `<span class="chip-tag">${s}</span>`).join('')}</td>
-        <td>${w.antonyms.map(a => `<span class="chip-anti">${a}</span>`).join('')}</td>
-      </tr>
-      `).join('')}
+        <td class="td-num">${i + 1}</td>
+        <td class="td-word"><span class="word-en">${w.word}</span><span class="word-pos">${w.pos ?? ''}</span></td>
+        <td class="td-meaning">
+          <span class="meaning-main">${main ?? ''}</span>
+          ${rest.length ? `<br><span class="meaning-sub">${rest.join(', ')}</span>` : ''}
+        </td>
+        <td class="td-syn">${(w.synonyms ?? []).join(', ')}</td>
+        <td class="td-ant">${(w.antonyms ?? []).join(', ')}</td>
+      </tr>`;
+      }).join('')}
     </tbody>
   </table>
 </body>
@@ -519,10 +567,85 @@ export function render08_핵심어휘(data) {
   `;
 }
 
+// 단어 확인 테스트 (전체 지문 합산, 2컬럼 그리드)
+export function render_단어테스트(allData, pageTitle = '') {
+  const cols = 2;
+  const sections = allData.map(({ passage, type_08_핵심어휘 }) => {
+    const words = type_08_핵심어휘?.words ?? [];
+    return `
+    <div class="section">
+      <div class="section-title">${passage.korean_title}</div>
+      <table>
+        <thead><tr><th>No.</th><th>단어</th><th>품사</th><th>뜻</th></tr></thead>
+        <tbody>
+          ${words.map((w, i) => `
+          <tr>
+            <td class="num">${i + 1}</td>
+            <td class="word">${w.word}</td>
+            <td class="pos">${w.pos ?? ''}</td>
+            <td class="blank"></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  });
+
+  // 2컬럼 그리드로 배치
+  const rows = [];
+  for (let i = 0; i < sections.length; i += cols) {
+    rows.push(`<div class="row">${sections.slice(i, i + cols).join('')}</div>`);
+  }
+
+  return `
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>단어 확인 테스트</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4; margin: 14mm 16mm; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter','Noto Sans KR',sans-serif; width:210mm; min-height:297mm; margin:0 auto; padding:14mm 16mm; background:#fff; color:#1a1a1a; font-size:10px; line-height:1.4; }
+
+  .page-header { border-bottom:2px solid #E87B2E; padding-bottom:6px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; }
+  .page-header .sub { font-size:9px; color:#E87B2E; font-weight:600; letter-spacing:.5px; }
+  .page-header .academy { font-size:9px; color:#888; }
+
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  .section { }
+  .section-title { background:#F3F4F6; border-left:3px solid #E87B2E; padding:4px 8px; font-weight:700; font-size:9.5px; color:#1a1a1a; margin-bottom:6px; border-radius:0 3px 3px 0; }
+
+  table { width:100%; border-collapse:collapse; }
+  thead tr { border-bottom:1.5px solid #1a1a1a; }
+  th { font-size:9px; font-weight:700; color:#555; padding:4px 6px; text-align:left; }
+  tbody tr { border-bottom:1px solid #EBEBEB; }
+  td { padding:4px 6px; font-size:9.5px; }
+  .num { color:#999; width:20px; }
+  .word { font-weight:700; color:#E87B2E; width:70px; }
+  .pos { color:#999; font-style:italic; font-size:8.5px; width:24px; }
+  .blank { border-bottom:1px solid #CCC; }
+
+  @media print { body { width:100% !important; margin:0 !important; padding:0 !important; } .row { break-inside:avoid; } }
+</style>
+</head>
+<body>
+  <div class="page-header">
+    <div class="sub">${pageTitle}  -  단어테스트</div>
+    <div class="academy">평택 베리타스학원</div>
+  </div>
+  ${rows.join('')}
+</body>
+</html>
+  `;
+}
+
 // 09_한줄해석.html
-export function render09_한줄해석(data) {
-  const { passage, type_09_한줄해석 } = data;
-  
+export function render09_한줄해석(data, pageTitle = '') {
+  const { passage, type_09_한줄해석, type_03_문장해석 } = data;
+  const _sentences09 = type_09_한줄해석?.sentences ?? type_03_문장해석?.sentences ?? [];
+
   return `
 <!DOCTYPE html>
 <html lang="ko">
@@ -536,27 +659,29 @@ export function render09_한줄해석(data) {
   * { margin:0; padding:0; box-sizing:border-box; font-size:11px !important; }
   body { font-family:'Inter','Noto Sans KR',sans-serif; width:210mm; min-height:297mm; margin:0 auto; padding:12mm; background:#ffffff; line-height:1.45; color:#1f2937; }
   
-  .header { background:linear-gradient(135deg,#1E40AF,#3B82F6); color:#fff; padding:12px 20px; border-radius:6px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; }
-  .header h1 { font-size:14px !important; font-weight:700; margin:0; }
-  .header-right { font-size:10px !important; text-transform:uppercase; letter-spacing:1px; opacity:.9; }
-  
-  .item { border:1px solid #E2E8F0; border-radius:8px; overflow:hidden; margin-bottom:14px; display:flex; flex-direction:column; }
-  .item-head { display:flex; align-items:flex-start; gap:8px; padding:8px 12px; background:#F8FAFF; border-bottom:1px dashed #E2E8F0; }
-  .num { background:#1E40AF; color:#fff; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; flex-shrink:0; }
-  .eng { color:#111827; font-weight:600; font-size:13px !important; flex:1; }
-  .write-area { position:relative; min-height:50px; margin:0 14px 10px 14px; }
-  .write-line { position:absolute; bottom:0; left:0; right:0; border-top:2px solid #CBD5E1; }
-  
-  @media print { body { padding:10mm; } .item { break-inside:avoid; } }
+  .page-header { border-bottom:2px solid #E87B2E; padding-bottom:6px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; }
+  .page-header .sub { font-size:9px; color:#E87B2E; font-weight:600; letter-spacing:.5px; }
+  .page-header .academy { font-size:9px; color:#888; }
+  .section-label { background:#FFF3E8; border-left:3px solid #E87B2E; padding:6px 10px; margin-bottom:12px; border-radius:0 4px 4px 0; }
+  .section-label .korean { font-weight:700; font-size:11px; color:#1a1a1a; }
+
+  .item { border:1px solid #F0E0D0; border-radius:6px; overflow:hidden; margin-bottom:10px; display:flex; flex-direction:column; break-inside:avoid; }
+  .item-head { display:flex; align-items:flex-start; gap:8px; padding:8px 12px; background:#FFF8F3; border-bottom:1px dashed #F0E0D0; }
+  .num { color:#E87B2E; font-weight:700; font-size:11px !important; flex-shrink:0; min-width:22px; }
+  .eng { color:#111827; font-weight:600; font-size:11px !important; flex:1; line-height:1.6; }
+  .write-area { position:relative; min-height:44px; margin:0 14px 10px 14px; }
+  .write-line { position:absolute; bottom:0; left:0; right:0; border-top:1.5px solid #DDD; }
+
+  @media print { body { width:100% !important; margin:0 !important; padding:0 !important; } .item { break-inside:avoid; } }
 </style>
 </head>
 <body>
-  <div class="header">
-    <h1>국문쓰기</h1>
-    <div class="header-right">평택 베리타스학원</div>
+  <div class="page-header">
+    <div class="sub">${pageTitle}  -  한줄해석</div>
+    <div class="academy">평택 베리타스학원</div>
   </div>
-  
-  ${type_09_한줄해석.sentences.map(s => `
+
+  ${_sentences09.map(s => `
   <div class="item">
     <div class="item-head">
       <div class="num">${String(s.num).padStart(2, '0')}</div>
@@ -570,66 +695,144 @@ export function render09_한줄해석(data) {
   `;
 }
 
+// 워크북 공통 CSS
+const WB_STYLE = `
+  @page { size: A4; margin: 12mm 13mm; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter','Noto Sans KR',sans-serif; width:210mm; min-height:297mm; margin:0 auto; padding:12mm 13mm; background:#fff; color:#1a1a1a; font-size:10px; line-height:1.4; }
+  .page-header { border-bottom:2px solid #E87B2E; padding-bottom:6px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; }
+  .page-header .sub { font-size:9px; color:#E87B2E; font-weight:600; letter-spacing:.5px; }
+  .page-header .academy { font-size:9px; color:#888; }
+  .wb-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .wb-card { border:1px solid #DEDEDE; border-radius:4px; padding:10px 11px; break-inside:avoid; display:flex; flex-direction:column; }
+  .wb-num { font-weight:700; font-size:11px; color:#1a1a1a; margin-bottom:3px; }
+  .wb-inst { font-size:8px; color:#666; margin-bottom:7px; }
+  .wb-text { line-height:1.95; font-size:10px; color:#222; flex:1; margin-bottom:9px; word-break:keep-all; text-align:justify; }
+  .cw { font-weight:600; white-space:nowrap; }
+  .cn { color:#E87B2E; font-size:7.5px; }
+  .fw { }
+  .fn { color:#E87B2E; font-size:7.5px; }
+  .wb-ans { border-top:1px solid #E0E0E0; padding-top:7px; display:grid; grid-template-columns:repeat(4,1fr); gap:3px 6px; }
+  .ai { display:flex; align-items:center; gap:3px; font-size:8.5px; }
+  .an { color:#888; min-width:14px; }
+  .ab { flex:1; border-bottom:1px solid #AAA; height:14px; }
+  .sent-item { display:flex; gap:5px; margin-bottom:5px; font-size:10px; line-height:1.7; }
+  .sl { font-weight:700; color:#E87B2E; min-width:20px; flex-shrink:0; }
+  @media print { body { width:100% !important; margin:0 !important; padding:0 !important; } }
+  .st { color:#222; }
+  .order-ans { border-top:1px solid #E0E0E0; padding-top:7px; display:flex; align-items:center; gap:6px; font-size:9px; }
+  .order-label { color:#555; font-weight:600; white-space:nowrap; }
+  .order-blank { flex:1; border-bottom:1px solid #AAA; height:16px; }
+`;
 
-// 10_영문쓰기.html
-export function render10_영문쓰기(data) {
-  const { passage, type_09_한줄해석 } = data;
-  
-  return `
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>영문쓰기 - ${passage.korean_title}</title>
+// 워크북: 어법선택
+export function render_워크북_어법선택(allData, pageTitle = '') {
+  const cards = allData.map((data, idx) => {
+    const { passage, type_워크북_어법선택: wb } = data;
+    if (!wb?.passage_marked) return '';
+    const parsedText = parseChoiceMarkup(wb.passage_marked);
+    return `
+    <div class="wb-card">
+      <div class="wb-num">${idx + 1}. 어법 선택</div>
+      <div class="wb-inst">※ 괄호 안에서 어법상 적절한 것을 고르시오.</div>
+      <div class="wb-text">${parsedText}</div>
+    </div>`;
+  }).filter(Boolean);
+
+  const rows = [];
+  for (let i = 0; i < cards.length; i += 2) rows.push(`<div class="wb-grid">${cards.slice(i,i+2).join('')}</div>`);
+  return `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>어법선택</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-  @page { size: A4; margin: 12mm; }
-  * { margin:0; padding:0; box-sizing:border-box; font-size:11px !important; }
-  body { font-family:'Inter','Noto Sans KR',sans-serif; width:210mm; min-height:297mm; margin:0 auto; padding:12mm; background:#ffffff; line-height:1.45; color:#1f2937; }
-  
-  .header { background:linear-gradient(135deg,#1E40AF,#3B82F6); color:#fff; padding:12px 20px; border-radius:6px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; }
-  .header h1 { font-size:14px !important; font-weight:700; margin:0; }
-  .header-right { font-size:10px !important; text-transform:uppercase; letter-spacing:1px; opacity:.9; }
-  
-  .item { border:1px solid #E2E8F0; border-radius:8px; overflow:hidden; margin-bottom:14px; display:flex; flex-direction:column; }
-  .item-head { display:flex; align-items:flex-start; gap:8px; padding:8px 12px; background:#F8FAFF; border-bottom:1px dashed #E2E8F0; }
-  .num { background:#1E40AF; color:#fff; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; flex-shrink:0; }
-  .eng { color:#111827; font-weight:600; font-size:13px !important; flex:1; }
-  .write-area { position:relative; min-height:50px; margin:0 14px 10px 14px; }
-  .write-line { position:absolute; bottom:0; left:0; right:0; border-top:2px solid #CBD5E1; }
-  
-  @media print { body { padding:10mm; } .item { break-inside:avoid; } }
-</style>
-</head>
-<body>
-  <div class="header">
-    <h1>영문쓰기</h1>
-    <div class="header-right">평택 베리타스학원</div>
-  </div>
-  
-  ${type_09_한줄해석.sentences.map(s => `
-  <div class="item">
-    <div class="item-head">
-      <div class="num">${String(s.num).padStart(2, '0')}</div>
-      <div class="eng">${s.korean}</div>
-    </div>
-    <div class="write-area"><div class="write-line"></div></div>
-  </div>
-  `).join('')}
-</body>
-</html>
-  `;
+<style>${WB_STYLE}</style></head><body>
+<div class="page-header"><div class="sub">${pageTitle}  -  워크북</div><div class="academy">평택 베리타스학원</div></div>
+${rows.join('<div style="margin-top:12px;"></div>')}
+</body></html>`;
+}
+
+// 워크북: 어법수정
+export function render_워크북_어법수정(allData, pageTitle = '') {
+  const cards = allData.map((data, idx) => {
+    const { passage, type_워크북_어법수정: wb } = data;
+    if (!wb?.passage_marked) return '';
+    const parsedText = parseFixMarkup(wb.passage_marked);
+    const answers = wb.answers ?? [];
+    const blanks = answers.map(a => `<div class="ai"><span class="an">${a.num}</span><span style="font-size:8.5px;color:#C00;margin-right:2px;">${a.wrong}</span><span style="color:#888;margin-right:2px;">→</span><span class="ab"></span></div>`).join('');
+    return `
+    <div class="wb-card">
+      <div class="wb-num">${idx + 1}. 어법 수정</div>
+      <div class="wb-inst">※ 밑줄 친 부분을 어법에 맞게 고쳐 쓰시오.</div>
+      <div class="wb-text">${parsedText}</div>
+      <div class="wb-ans" style="grid-template-columns:repeat(2,1fr);">${blanks}</div>
+    </div>`;
+  }).filter(Boolean);
+
+  const rows = [];
+  for (let i = 0; i < cards.length; i += 2) rows.push(`<div class="wb-grid">${cards.slice(i,i+2).join('')}</div>`);
+  return `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>어법수정</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>${WB_STYLE}</style></head><body>
+<div class="page-header"><div class="sub">${pageTitle}  -  워크북</div><div class="academy">평택 베리타스학원</div></div>
+${rows.join('<div style="margin-top:12px;"></div>')}
+</body></html>`;
+}
+
+// 워크북: 어휘선택
+export function render_워크북_어휘선택(allData, pageTitle = '') {
+  const cards = allData.map((data, idx) => {
+    const { passage, type_워크북_어휘선택: wb } = data;
+    if (!wb?.passage_marked) return '';
+    const parsedText = parseChoiceMarkup(wb.passage_marked);
+    return `
+    <div class="wb-card">
+      <div class="wb-num">${idx + 1}. 어휘 선택</div>
+      <div class="wb-inst">※ 괄호 안에서 문맥에 맞는 낱말을 고르시오.</div>
+      <div class="wb-text">${parsedText}</div>
+    </div>`;
+  }).filter(Boolean);
+
+  const rows = [];
+  for (let i = 0; i < cards.length; i += 2) rows.push(`<div class="wb-grid">${cards.slice(i,i+2).join('')}</div>`);
+  return `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>어휘선택</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>${WB_STYLE}</style></head><body>
+<div class="page-header"><div class="sub">${pageTitle}  -  워크북</div><div class="academy">평택 베리타스학원</div></div>
+${rows.join('<div style="margin-top:12px;"></div>')}
+</body></html>`;
+}
+
+// 워크북: 순서배열
+export function render_워크북_순서배열(allData, pageTitle = '') {
+  const cards = allData.map((data, idx) => {
+    const { passage, type_워크북_순서배열: wb } = data;
+    if (!wb?.sentences?.length) return '';
+    const sentHTML = wb.sentences.map(s =>
+      `<div class="sent-item"><span class="sl">(${s.label})</span><span class="st">${s.text}</span></div>`
+    ).join('');
+    return `
+    <div class="wb-card">
+      <div class="wb-num">${idx + 1}. 순서 배열</div>
+      <div class="wb-inst">※ 주어진 문장을 올바른 순서로 배열하시오.</div>
+      <div class="wb-text">${sentHTML}</div>
+      <div class="order-ans"><span class="order-label">정답:</span><span class="order-blank"></span></div>
+    </div>`;
+  }).filter(Boolean);
+
+  const rows = [];
+  for (let i = 0; i < cards.length; i += 2) rows.push(`<div class="wb-grid">${cards.slice(i,i+2).join('')}</div>`);
+  return `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>순서배열</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>${WB_STYLE}</style></head><body>
+<div class="page-header"><div class="sub">${pageTitle}  -  워크북</div><div class="academy">평택 베리타스학원</div></div>
+${rows.join('<div style="margin-top:12px;"></div>')}
+</body></html>`;
 }
 
 // 전체 HTML 생성 (모든 유형 합치기)
-export function renderAllTypes(jsonData, webtoonImageUrl = null) {
+export function renderAllTypes(jsonData, webtoonImageUrl = null, pageTitle = '리얼고 1학년 26년 1학기 중간고사 대비') {
   return {
-    '01_문단개요': render01_문단개요(jsonData, webtoonImageUrl),
-    '03_본문노트_의역': render03_본문노트_의역(jsonData), 
-    '08_핵심어휘': render08_핵심어휘(jsonData),
-    '09_한줄해석': render09_한줄해석(jsonData),
-    '10_영문쓰기': render10_영문쓰기(jsonData),
-    // TODO: 03~08 추가
+    '01_본문노트': render01_본문노트(jsonData, webtoonImageUrl, pageTitle),
+    '03_문장해석': render03_문장해석(jsonData, pageTitle),
+    '08_핵심어휘': render08_핵심어휘(jsonData, pageTitle),
+    '09_한줄해석': render09_한줄해석(jsonData, pageTitle),
   };
 }
