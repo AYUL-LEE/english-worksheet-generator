@@ -159,39 +159,64 @@ JSON만 출력하세요.`;
         model: model,
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
-        max_tokens: 12000
+        max_tokens: 16000,
+        response_format: { type: 'json_object' },  // 순수 JSON만 출력 강제
       });
 
       let jsonText = completion.choices[0].message.content.trim();
-      
-      // 원본 응답 로그 (파싱 전)
-      console.log('=== GPT 원본 응답 ===');
-      console.log('토큰:', completion.usage);
-      console.log('응답 길이:', jsonText.length);
-      console.log('원본 텍스트 일부:', jsonText.substring(0, 8000));
 
-      // JSON 추출
-      if (jsonText.startsWith('```json')) {
-        jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?$/g, '');
-      } else if (jsonText.startsWith('```')) {
-        jsonText = jsonText.replace(/```\n?/g, '');
+      // 응답이 잘렸는지 확인
+      const finishReason = completion.choices[0].finish_reason;
+      console.log('=== GPT 응답 ===');
+      console.log('토큰:', completion.usage);
+      console.log('finish_reason:', finishReason);
+      console.log('응답 길이:', jsonText.length);
+      if (finishReason === 'length') {
+        console.warn('⚠️ 응답이 max_tokens에서 잘림! JSON이 불완전할 수 있음.');
       }
 
-      // JSON 파싱 시도
+      // 마크다운 코드블록 제거
+      if (jsonText.startsWith('```json')) {
+        jsonText = jsonText.replace(/^```json\n?/, '').replace(/\n?```$/, '');
+      } else if (jsonText.startsWith('```')) {
+        jsonText = jsonText.replace(/^```\n?/, '').replace(/\n?```$/, '');
+      }
+
+      // JSON 파싱 시도 (1차: 그대로)
       let jsonData;
       try {
         jsonData = JSON.parse(jsonText);
       } catch (parseError) {
-        console.error('JSON 파싱 에러:', parseError.message);
-        console.error('문제 위치 주변:', jsonText.substring(10400, 10500));
+        console.warn('1차 파싱 실패, JSON 블록 추출 시도:', parseError.message);
 
-        // 파싱 실패 시 원본 반환
-        return res.status(500).json({
-          success: false,
-          error: 'JSON 파싱 실패: ' + parseError.message,
-          rawResponse: jsonText,
-          tokenUsage: completion.usage
-        });
+        // 2차: 첫 번째 { 부터 마지막 } 까지만 추출
+        const firstBrace = jsonText.indexOf('{');
+        const lastBrace = jsonText.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+          const extracted = jsonText.slice(firstBrace, lastBrace + 1);
+          try {
+            jsonData = JSON.parse(extracted);
+            console.log('✅ 2차 파싱 성공 (블록 추출)');
+          } catch (e2) {
+            console.error('2차 파싱도 실패:', e2.message);
+            console.error('문제 위치 주변 (position -100~+100):', jsonText.substring(Math.max(0, e2.message.match(/\d+/)?.[0] - 100), parseInt(e2.message.match(/\d+/)?.[0]) + 100));
+            return res.status(500).json({
+              success: false,
+              error: 'JSON 파싱 실패: ' + e2.message,
+              rawResponse: jsonText.substring(0, 2000),
+              tokenUsage: completion.usage,
+              finishReason,
+            });
+          }
+        } else {
+          return res.status(500).json({
+            success: false,
+            error: 'JSON 파싱 실패: ' + parseError.message,
+            rawResponse: jsonText.substring(0, 2000),
+            tokenUsage: completion.usage,
+            finishReason,
+          });
+        }
       }
 
       // 디버깅 정보 저장
