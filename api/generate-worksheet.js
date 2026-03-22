@@ -37,15 +37,12 @@ ${passage}
     "english_title": "적절한 영문 제목"
   },
   "type_01_문단개요": {
-    "문단구성": {
-      "서론": "서론 내용 요약",
-      "본론": "본론 내용 요약",
-      "결론": "결론 내용 요약"
-    },
-    "문단요약": {
-      "영문": "영문 요약 1-2문장",
-      "한글": "한글 요약 1-2문장"
-    },   
+    "논리흐름": [
+      {
+        "소제목": "논리 단계 제목 (간결하게)",
+        "내용": "해당 단계의 핵심 내용 1-2문장 (한글)"
+      }
+    ]
   },
   "type_03_본문노트_의역": {
     "sentences": [
@@ -85,7 +82,8 @@ ${passage}
 
 1. **문장 분리**: 마침표(.), 물음표(?), 느낌표(!) 기준으로 모든 문장을 개별 분리
    - 예시: 지문에 7개 문장이 있으면 sentences 배열에 7개 객체 필요
-2. 핵심어휘는  20개의 단어로 선정해주세요. 난이도는 수능 난이도 단어로 해주세요. 
+2. 핵심어휘는 20개의 단어로 선정해주세요. 난이도는 수능 난이도 단어로 해주세요.
+3. **논리흐름**: 지문의 논리 전개를 3~5단계로 나누어 각 단계의 소제목과 핵심 내용을 한글로 작성하세요.
 
 **다시 강조: type_03, type_09는 sentences 배열에 지문의 모든 문장이 포함되어야 합니다!**
 
@@ -149,8 +147,39 @@ JSON만 출력하세요.`;
 
       console.log(`✅ 지문 ${i+1} 완료 - 토큰: ${completion.usage.total_tokens}`);
 
+      // DALL-E 3 4컷 웹툰 이미지 생성
+      let webtoonImageUrl = null;
+      try {
+        const logicalFlow = jsonData.type_01_문단개요?.논리흐름 ?? [];
+        const panelDescriptions = logicalFlow.slice(0, 4).map((step, idx) =>
+          `Panel ${idx + 1}: ${step.소제목} - ${step.내용}`
+        ).join('\n');
+
+        const imagePrompt = `Create a single image divided into exactly 4 panels arranged in a 2x2 grid, in a clean webtoon/comic strip style with simple bold outlines and flat colors.
+Each panel illustrates a key idea from the following English passage about: "${jsonData.passage.english_title}".
+
+${panelDescriptions}
+
+Each panel should have a short English caption at the bottom (3-6 words max).
+Style: Modern Korean webtoon, clean line art, bright colors, no text bubbles, simple backgrounds.
+Important: All 4 panels must be clearly separated by thin borders and have a consistent art style.`;
+
+        const imageResponse = await openai.images.generate({
+          model: 'dall-e-3',
+          prompt: imagePrompt,
+          n: 1,
+          size: '1024x1024',
+          quality: 'standard',
+        });
+        webtoonImageUrl = imageResponse.data[0].url;
+        console.log(`🎨 웹툰 이미지 생성 완료`);
+      } catch (imgError) {
+        console.error('이미지 생성 실패:', imgError.message);
+        // 이미지 실패해도 나머지 진행
+      }
+
       // JSON → HTML 변환
-      const htmlResults = renderAllTypes(jsonData);
+      const htmlResults = renderAllTypes(jsonData, webtoonImageUrl);
 
       // 결과 저장
       for (const [type, html] of Object.entries(htmlResults)) {

@@ -1,16 +1,42 @@
 // JSON 데이터를 HTML 템플릿에 삽입하는 함수들
 
+const CIRCLED_NUMS = ['①','②','③','④','⑤','⑥','⑦','⑧','⑨','⑩','⑪','⑫','⑬','⑭','⑮','⑯','⑰','⑱','⑲','⑳'];
+
 // 01_문단개요.html
-export function render01_문단개요(data) {
-    const { passage, type_01_문단개요, type_03_본문노트_의역 } = data;
+export function render01_문단개요(data, webtoonImageUrl = null) {
+  const { passage, type_01_문단개요, type_03_본문노트_의역 } = data;
 
-      const sentenceList =     type_03_본문노트_의역?.sentences
-      ?.map((s) => s.english?.trim())
-      .filter(Boolean)
-      .join("<br>") || type_01_문단개요?.본문학습 || "";
+  const sentences = type_03_본문노트_의역?.sentences ?? [];
 
-      console.log(sentenceList);
-  
+  // 본문학습: ①②③ 넘버링 + 인라인(줄바꿈 없이)
+  const numberedText = sentences
+    .map((s, i) => `${CIRCLED_NUMS[i] || `(${i+1})`} ${s.english?.trim()}`)
+    .join(' ');
+
+  // 논리흐름 렌더링
+  const logicalFlow = type_01_문단개요?.논리흐름 ?? [];
+  const logicalFlowHTML = logicalFlow.map((step, i) => `
+    <div class="flow-item">
+      <div class="flow-num">${i + 1}</div>
+      <div class="flow-body">
+        <div class="flow-title">${step.소제목}</div>
+        <div class="flow-desc">${step.내용}</div>
+      </div>
+    </div>`).join('');
+
+  // 웹툰 이미지 섹션
+  const webtoonSection = webtoonImageUrl ? `
+  <div class="content-section">
+    <h3 class="section-header">| LOGICAL FLOW (논리 흐름)</h3>
+    <div class="section-content webtoon-content">
+      <img src="${webtoonImageUrl}" alt="4컷 웹툰 요약" style="width:100%;border-radius:4px;" />
+    </div>
+  </div>` : `
+  <div class="content-section">
+    <h3 class="section-header">| LOGICAL FLOW (논리 흐름)</h3>
+    <div class="section-content" style="text-align:center;color:#94A3B8;padding:20px;">이미지 생성 실패</div>
+  </div>`;
+
   return `
 <!DOCTYPE html>
 <html lang="ko">
@@ -23,29 +49,30 @@ export function render01_문단개요(data) {
   @page { size: A4; margin: 12mm; }
   * { margin:0; padding:0; box-sizing:border-box; font-size:11px !important; }
   body { font-family:'Inter','Noto Sans KR',sans-serif; width:210mm; min-height:297mm; margin:0 auto; padding:12mm; background:#ffffff; line-height:1.3; }
-  
+
   .header { background:linear-gradient(135deg,#1E40AF,#3B82F6); color:#fff; padding:12px 20px; border-radius:6px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; }
   .header h1 { font-size:14px !important; font-weight:700; margin:0; }
   .header-right { font-size:10px !important; text-transform:uppercase; letter-spacing:1px; opacity:.9; }
-  
+
   .title-section { background:#F8FAFC; border:1px solid #E2E8F0; border-radius:6px; padding:12px; margin-bottom:15px; text-align:center; }
   .title-korean { font-size:16px !important; font-weight:700; color:#1E293B; margin-bottom:6px; }
   .title-english { font-size:12px !important; color:#64748B; font-style:italic; }
-  
+
   .content-section { margin-bottom:15px; }
   .section-header { background:#1E40AF; color:#fff; padding:6px 12px; font-size:12px !important; font-weight:700; border-radius:4px 4px 0 0; margin:0; }
   .section-content { border:1px solid #E2E8F0; border-top:none; padding:12px; border-radius:0 0 4px 4px; }
-  .section-content p { margin-bottom:8px; }
-  
-  .text-content { line-height:2.0; color:#374151; border:1px solid #E2E8F0; padding:15px; background:#FEFEFE; border-radius:4px; font-weight:600; }
-  .structure-content { line-height:1.5; color:#374151; }
-  
-  .summary-box { background:#EFF6FF; border-left:4px solid #1E40AF; padding:12px; border-radius:0 4px 4px 0; }
-  .summary-english { margin-bottom:8px; font-style:italic; color:#1E40AF; }
-  .summary-korean { color:#374151; }
-  
-  .expected-questions { display:flex; flex-wrap:wrap; gap:6px; }
-  .question-tag { display:inline-block; background:#DBEAFE; color:#1E40AF; padding:4px 8px; border-radius:4px; font-size:10px !important; }
+
+  .text-content { line-height:2.2; color:#374151; padding:12px; background:#FEFEFE; border-radius:4px; font-weight:600; word-break:keep-all; }
+
+  /* 논리흐름 */
+  .flow-item { display:flex; gap:10px; align-items:flex-start; padding:8px 0; border-bottom:1px solid #F1F5F9; }
+  .flow-item:last-child { border-bottom:none; }
+  .flow-num { min-width:22px; height:22px; background:#1E40AF; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11px !important; flex-shrink:0; margin-top:1px; }
+  .flow-body { flex:1; }
+  .flow-title { font-weight:700; color:#1E293B; margin-bottom:3px; font-size:11px !important; }
+  .flow-desc { color:#475569; line-height:1.5; }
+
+  .webtoon-content { padding:8px; }
 </style>
 </head>
 <body>
@@ -53,48 +80,27 @@ export function render01_문단개요(data) {
     <h1>본문노트</h1>
     <div class="header-right">평택 베리타스학원</div>
   </div>
-  
+
   <div class="title-section">
     <div class="title-korean">${passage.korean_title}</div>
     <div class="title-english">${passage.english_title}</div>
   </div>
-  
+
   <div class="content-section">
     <h3 class="section-header">| 본문학습</h3>
     <div class="section-content">
-           <p><strong>본문을 있는 그대로 읽어보면서 중요한 부분을 확인해보세요.</strong></p>
-            <br>
-      <div class="text-content">${sentenceList}</div>
-       <div class="text-content">
-  ${(data.type_03_본문노트_의역?.sentences ?? [])
-    .map(s => s.korean_natural)
-    .join('')}
-</div>
-      </div>
-  </div>
-  
-  <div class="content-section">
-    <h3 class="section-header">| 문단구성</h3>
-    <div class="section-content structure-content">
-    <p><strong>본문을 구조화해서 서론/본론/결론의 내용을 파악해보세요.</strong></p>
-            <br>
-      <p><strong>서론:</strong> ${type_01_문단개요.문단구성.서론}</p>
-      <p><strong>본론:</strong> ${type_01_문단개요.문단구성.본론}</p>
-      <p><strong>결론:</strong> ${type_01_문단개요.문단구성.결론}</p>
+      <div class="text-content">${numberedText}</div>
     </div>
   </div>
-  
+
   <div class="content-section">
-    <h3 class="section-header">| 문단요약</h3>
+    <h3 class="section-header">| LOGICAL FLOW (논리 흐름)</h3>
     <div class="section-content">
-    <p><strong>간략한 문장으로 요약한 본문내용을 정리해보세요.</strong></p>
-            <br>
-      <div class="summary-box">
-        <div class="summary-english">${type_01_문단개요.문단요약.영문}</div>
-        <div class="summary-korean">${type_01_문단개요.문단요약.한글}</div>
-      </div>
+      ${logicalFlowHTML}
     </div>
   </div>
+
+  ${webtoonSection}
 </body>
 </html>
   `;
@@ -617,9 +623,9 @@ export function render10_영문쓰기(data) {
 }
 
 // 전체 HTML 생성 (모든 유형 합치기)
-export function renderAllTypes(jsonData) {
+export function renderAllTypes(jsonData, webtoonImageUrl = null) {
   return {
-    '01_문단개요': render01_문단개요(jsonData),
+    '01_문단개요': render01_문단개요(jsonData, webtoonImageUrl),
     '03_본문노트_의역': render03_본문노트_의역(jsonData), 
     '08_핵심어휘': render08_핵심어휘(jsonData),
     '09_한줄해석': render09_한줄해석(jsonData),
