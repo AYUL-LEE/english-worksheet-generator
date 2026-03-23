@@ -22,8 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
     closeModal.addEventListener('click', hidePreview);
     
     // 전체 선택 버튼들
-    document.getElementById('selectAllAnalysis').addEventListener('click', selectAllAnalysis);
-    document.getElementById('selectAllWorkbook')?.addEventListener('click', selectAllWorkbook);
+    document.getElementById('selectAllTypes')?.addEventListener('click', selectAllTypes);
     // document.getElementById('deselectAll').addEventListener('click', deselectAll);
     //  // 히스토리 관련
     // document.getElementById('clearHistory').addEventListener('click', clearAllHistory);
@@ -196,21 +195,10 @@ function getSelectedTypes() {
         const element = document.getElementById(id);
         return element ? element.checked : false;
     };
-    
+
     return {
-        type01: safeCheck('type01'),
-        type02: safeCheck('type02'),
-        type03: safeCheck('type03'),
-        type04: safeCheck('type04'),
-        type05: safeCheck('type05'),
-        type06: safeCheck('type06'),
-        type07: safeCheck('type07'),
-        type08: safeCheck('type08'),
-        type09: safeCheck('type09'),
-        wb_어법선택: safeCheck('wb_어법선택'),
-        wb_어법수정: safeCheck('wb_어법수정'),
-        wb_어휘선택: safeCheck('wb_어휘선택'),
-        wb_순서배열: safeCheck('wb_순서배열'),
+        기본워크북: safeCheck('기본워크북'),
+        문제워크북: safeCheck('문제워크북'),
     };
 }
 
@@ -358,12 +346,7 @@ function generatePreviewHTML(results, passageCount, selectedTypes) {
     '08_핵심어휘',
     '09_한줄해석',
   ];
-  const workbookTypes = [
-    '워크북_어법선택',
-    '워크북_어법수정',
-    '워크북_어휘선택',
-    '워크북_순서배열',
-  ];
+  const workbookTypes = ['워크북_문제'];
 
   // 유형 먼저, 지문 순서: 본문노트(지문1→지문2) → 문장해석(지문1→지문2) → ...
   for (let typeIndex = 0; typeIndex < perPassageTypes.length; typeIndex++) {
@@ -386,15 +369,13 @@ function generatePreviewHTML(results, passageCount, selectedTypes) {
     }
   }
 
-  // 워크북 유형 (전체 지문 합산, 한 번만 출력)
-  for (let typeIndex = 0; typeIndex < workbookTypes.length; typeIndex++) {
-    const type = workbookTypes[typeIndex];
-    const result = results[type];
+  // 문제워크북: 지문별 통합 1문서 출력
+  for (let passageIndex = 0; passageIndex < passageCount; passageIndex++) {
+    const key = `워크북_문제_passage${passageIndex}`;
+    const result = results[key];
     if (result && result.content) {
       html += result.content;
-      if (typeIndex < workbookTypes.length - 1) {
-        html += '<div class="page-break"></div>';
-      }
+      html += '<div class="page-break"></div>';
     }
   }
 
@@ -504,21 +485,11 @@ function hidePreview() {
 }
 
 
-// 전체 선택 함수들도 수정
-function selectAllAnalysis() {
-    const analysisIds = ['type01', 'type03', 'type08', 'type09'];
-      const allChecked = analysisIds.every(id => document.getElementById(id)?.checked);
-    
-    analysisIds.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) element.checked = !allChecked;  // 토글
-    });
-}
-
-function selectAllWorkbook() {
-    const workbookIds = ['wb_어법선택', 'wb_어법수정', 'wb_어휘선택', 'wb_순서배열'];
-    const allChecked = workbookIds.every(id => document.getElementById(id)?.checked);
-    workbookIds.forEach(id => {
+// 전체 선택 함수
+function selectAllTypes() {
+    const ids = ['기본워크북', '문제워크북'];
+    const allChecked = ids.every(id => document.getElementById(id)?.checked);
+    ids.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.checked = !allChecked;
     });

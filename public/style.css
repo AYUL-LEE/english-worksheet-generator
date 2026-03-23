@@ -27,7 +27,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3D7A05 0%, #6B9E1F 100%);
     min-height: 100vh;
     padding: 20px;
 }
@@ -42,7 +42,7 @@ body {
 }
 
 header {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    background: linear-gradient(135deg, #6DAF2E 0%, #A3D446 100%);
     color: white;
     padding: 40px;
     text-align: center;
@@ -107,7 +107,7 @@ h2 {
 .input-group input:focus,
 .input-group select:focus {
     outline: none;
-    border-color: #4facfe;
+    border-color: #6DAF2E;
 }
 
 /* 지문 입력 */
@@ -152,7 +152,7 @@ h2 {
 
 #passageInput:focus {
     outline: none;
-    border-color: #4facfe;
+    border-color: #6DAF2E;
 }
 
 .help-text {
@@ -162,7 +162,7 @@ h2 {
     border-radius: 8px;
     color: #666;
     font-size: 14px;
-    border-left: 4px solid #4facfe;
+    border-left: 4px solid #6DAF2E;
 }
 
 /* 카테고리 스타일 */
@@ -171,11 +171,11 @@ h2 {
 }
 
 .category-title {
-    color: #4facfe;
+    color: #6DAF2E;
     font-size: 1.3em;
     margin-bottom: 15px;
     padding-bottom: 8px;
-    border-bottom: 2px solid #4facfe;
+    border-bottom: 2px solid #6DAF2E;
 }
 
 /* 문제 유형 선택 */
@@ -197,7 +197,7 @@ h2 {
 }
 
 .type-checkbox:hover {
-    border-color: #4facfe;
+    border-color: #6DAF2E;
     background: #f0f8ff;
     transform: translateY(-2px);
 }
@@ -219,11 +219,11 @@ h2 {
 }
 
 .type-checkbox input:checked + span {
-    color: #4facfe;
+    color: #6DAF2E;
 }
 
 .type-checkbox input:checked ~ small {
-    color: #4facfe;
+    color: #6DAF2E;
 }
 
 /* 전체 선택 버튼 */
@@ -235,7 +235,7 @@ h2 {
 }
 
 .select-btn {
-    background: #74b9ff;
+    background: #7DB640;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -247,7 +247,7 @@ h2 {
 }
 
 .select-btn:hover {
-    background: #0984e3;
+    background: #4F8A00;
     transform: translateY(-1px);
 }
 
@@ -265,7 +265,7 @@ h2 {
 }
 
 .generate-btn {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    background: linear-gradient(135deg, #6DAF2E 0%, #A3D446 100%);
     color: white;
     border: none;
     padding: 18px 40px;
@@ -302,7 +302,7 @@ h2 {
     width: 40px;
     height: 40px;
     border: 4px solid #f0f0f0;
-    border-top: 4px solid #4facfe;
+    border-top: 4px solid #6DAF2E;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -391,7 +391,7 @@ h2 {
 }
 
 .modal-header {
-    background: #4facfe;
+    background: #6DAF2E;
     color: white;
     padding: 20px;
     display: flex;
@@ -501,7 +501,7 @@ h2 {
 /* 로딩 개선 */
 .loading p {
     font-size: 16px;
-    color: #4facfe;
+    color: #6DAF2E;
     font-weight: 500;
 }
 
@@ -509,16 +509,16 @@ h2 {
 .type-checkbox input[type="checkbox"] {
     width: 18px;
     height: 18px;
-    accent-color: #4facfe;
+    accent-color: #6DAF2E;
 }
 
 /* 카테고리별 색상 */
 .category:first-child .type-checkbox {
-    border-color: #74b9ff;
+    border-color: #7DB640;
 }
 
 .category:first-child .type-checkbox:hover {
-    border-color: #0984e3;
+    border-color: #4F8A00;
     background: #f0f8ff;
 }
 
@@ -575,7 +575,7 @@ h2 {
 }
 
 .history-item:hover {
-    border-color: #4facfe;
+    border-color: #6DAF2E;
     box-shadow: 0 4px 12px rgba(79, 172, 254, 0.2);
 }
 

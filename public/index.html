@@ -89,79 +89,25 @@ Environmental protection is becoming increasingly important..."
         <!-- 학습지 유형 선택 -->
 <section class="types-section">
     <h2>📋 학습지 유형 선택</h2>
-    
-    <!-- 분석서 카테고리 -->
+
     <div class="category">
         <div class="types-grid">
             <label class="type-checkbox">
-                <input type="checkbox" id="type01" checked>
-                <span>본문노트</span>
-                <small>제목, 본문, 문단요약</small>
+                <input type="checkbox" id="기본워크북" checked>
+                <span>기본 워크북</span>
+                <small>본문노트 · 문장해석 · 핵심어휘 · 한줄해석</small>
             </label>
-
-            <!-- <label class="type-checkbox">
-                <input type="checkbox" id="type02">
-                <span>본문노트(직독직해)</span>
-                <small>영어 순서대로 해석 연습</small>
-            </label> -->
-
             <label class="type-checkbox">
-                <input type="checkbox" id="type03" checked>
-                <span>문장해석</span>
-                <small>자연스러운 한글 해석</small>
-            </label>
-            
-            <!-- <label class="type-checkbox">
-                <input type="checkbox" id="type04" >
-                <span>문장분석</span>
-                <small>구문분석, 문법포인트</small>
-            </label> -->
-            
-            <label class="type-checkbox">
-                <input type="checkbox" id="type08" checked>
-                <span>핵심어휘</span>
-                <small>동의어, 반의어 포함</small>
-            </label>
-            
-            <label class="type-checkbox">
-                <input type="checkbox" id="type09" checked>
-                <span>한줄해석</span>
-                <small>영어 문장을 보고 한글로 쓰기</small>
+                <input type="checkbox" id="문제워크북" checked>
+                <span>문제 워크북</span>
+                <small>어법선택 · 어휘선택 · 삽입 · 순서 · 빈칸(단어) · 빈칸(문장) · 요약</small>
             </label>
         </div>
-    </div>
-    <div class="category">
-        <h3 class="category-title">📝 워크북</h3>
-        <div class="types-grid">
-            <label class="type-checkbox">
-                <input type="checkbox" id="wb_어법선택" checked>
-                <span>어법선택</span>
-                <small>괄호 안에서 어법상 적절한 것 고르기</small>
-            </label>
-            <label class="type-checkbox">
-                <input type="checkbox" id="wb_어법수정" checked>
-                <span>어법수정</span>
-                <small>밑줄 친 어법 오류 고쳐 쓰기</small>
-            </label>
-            <label class="type-checkbox">
-                <input type="checkbox" id="wb_어휘선택" checked>
-                <span>어휘선택</span>
-                <small>괄호 안에서 문맥에 맞는 어휘 고르기</small>
-            </label>
-            <label class="type-checkbox">
-                <input type="checkbox" id="wb_순서배열" checked>
-                <span>순서배열</span>
-                <small>문장을 올바른 순서로 배열하기</small>
-            </label>
-        </div>
-        <button class="select-all-btn" id="selectAllWorkbook">전체 선택</button>
     </div>
 
     <!-- 전체 선택/해제 버튼 -->
     <div class="select-all-section">
-        <button id="selectAllAnalysis" class="select-btn"> 전체 선택</button>
-        <!-- <button id="selectAllWorkbook" class="select-btn">워크북 전체 선택</button>
-        <button id="deselectAll" class="select-btn deselect">전체 해제</button> -->
+        <button id="selectAllTypes" class="select-btn">전체 선택/해제</button>
     </div>
 </section>
 

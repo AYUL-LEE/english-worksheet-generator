@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { renderAllTypes, render_단어테스트, render_워크북_어법선택, render_워크북_어법수정, render_워크북_어휘선택, render_워크북_순서배열 } from '../utils/templateRenderer.js';
+import { renderAllTypes, render_단어테스트, render_워크북_어법선택, render_워크북_어법수정, render_워크북_어휘선택, render_워크북_순서배열, render_워크북_삽입, render_워크북_빈칸단어, render_워크북_빈칸문장, render_워크북_요약, render_문제워크북 } from '../utils/templateRenderer.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -23,7 +23,7 @@ export default async function handler(req, res) {
       const passage = passages[i];
       
       const prompt = `당신은 한국 고등학교 영어 내신 대비 학습자료 제작 전문가입니다.
-다음 영어 지문을 분석하여 9개 유형의 학습자료 데이터를 JSON 형태로 출력하세요.
+다음 영어 지문을 분석하여 학습자료 데이터를 JSON 형태로 출력하세요.
 
 **중요: 반드시 유효한 JSON 형식으로만 응답하세요. 설명이나 추가 텍스트 없이 JSON만 출력하세요.**
 
@@ -35,7 +35,7 @@ ${passage}
   "passage": {
     "original_text": "원문 전체",
     "english_title":"흥미롭고 통찰력 있는 영문 제목. 'A: B' 형식으로 작성 (예: 'The Wealth Paradox: Why Abundance Leads to Social Disconnection'). 단순 주제 나열이 아닌 역설, 반전, 질문 형태로 독자의 흥미를 유발할 것",
-    "korean_title": "english title을 번역한 한글 제목",
+    "korean_title": "english title을 번역한 한글 제목"
     },
   "type_01_본문노트": {
     "논리흐름": [
@@ -64,11 +64,11 @@ ${passage}
     "words": [
       {
         "num": 1,
-        "word": "핵심단어",
+        "word": "핵심단어 (준동사는 동사원형으로)",
         "pos": "품사약어 (n./v./adj./adv./phr. 등)",
-        "meanings": ["본문 문맥에서의 뜻 (가장 먼저)", "기타 주요 뜻2", "기타 주요 뜻3"],
-        "synonyms": ["동의어1", "동의어2", "동의어3 (자연스럽게 있는 만큼)"],
-        "antonyms": ["반의어1", "반의어2 (자연스럽게 있는 만큼, 없으면 빈 배열)"]
+        "meanings": ["본문 문맥에서의 뜻 (가장 먼저)", "기타 주요 뜻2"],
+        "synonyms": ["동의어1", "동의어2"],
+        "antonyms": ["반의어1", "반의어2 (없으면 빈 배열)"]
       }
     ]
   },
@@ -82,33 +82,49 @@ ${passage}
     ]
   },
   "type_워크북_어법선택": {
-    "passage_marked": "지문 원문 텍스트 전체를 그대로 쓰되, 어법 포인트마다 번호[정답단어/오답단어] 형식으로 선택지를 삽입. 예시: 'For a species 1[born/bearing] in a time 2[when/which] resources 3[were/was] limited and dangers 4[were/was] great' — 실제 지문 단어를 사용할 것. 절대로 correct, wrong, 정답, 오답 같은 메타 텍스트 금지. 거의 모든 문장에 1~2개씩 삽입, 지문 문장 수 × 1.5개 이상 목표.",
-    "answers": [
-      {"num": 1, "answer": "정답 단어"},
-      {"num": 2, "answer": "정답 단어"}
-    ]
-  },
-  "type_워크북_어법수정": {
-    "passage_marked": "지문 원문 텍스트 전체를 그대로 쓰되, 어법 오류 위치의 단어를 번호[틀린형태] 로 교체. 예시: 'For a species 1[borned] in a time when resources 2[was] limited and dangers were great' — 번호 안의 단어는 반드시 틀린 형태의 실제 단어. 절대로 wrongform, error 같은 메타 텍스트 금지. 5~10개 오류 포함.",
-    "answers": [
-      {"num": 1, "wrong": "틀린단어", "correct": "바른단어"},
-      {"num": 2, "wrong": "틀린단어", "correct": "바른단어"}
-    ]
+    "passage_marked": "지문 원문 텍스트 전체를 그대로 쓰되, 고2 내신 필수 어법 포인트마다 번호[정답단어/오답단어] 형식으로 선택지를 삽입. 예시: 'For a species 1[born/bearing] in a time 2[when/which] resources 3[were/was] limited' — 실제 지문 단어를 사용할 것. 절대로 correct, wrong, 정답, 오답 같은 메타 텍스트 금지. 7-9곳을 무작위로 선택."
   },
   "type_워크북_어휘선택": {
-    "passage_marked": "지문 원문 텍스트 전체를 그대로 쓰되, 어휘 선택 포인트마다 번호[정답어휘/반의어휘] 형식으로 삽입. 예시: 'our natural 1[tendency/aversion] to share and cooperate is 2[complicated/simplified] when resources are 3[plentiful/scarce]' — 실제 지문 단어와 그 반의어/오류 어휘 사용. 절대로 correct, wrong 같은 메타 텍스트 금지. 거의 모든 문장에 1개씩, 지문 문장 수와 동일하거나 그 이상 목표.",
+    "passage_marked": "지문 원문 텍스트 전체를 그대로 쓰되, 어휘 선택 포인트마다 번호[정답어휘/반의어휘] 형식으로 삽입. 예시: 'our natural 1[tendency/aversion] to share and cooperate is 2[complicated/simplified] when resources are 3[plentiful/scarce]' — 정답과 오답은 반드시 반의어 관계여야 함. 절대로 correct, wrong 같은 메타 텍스트 금지. 7-9곳 랜덤 선택.",
     "answers": [
       {"num": 1, "answer": "정답 단어"},
       {"num": 2, "answer": "정답 단어"}
     ]
   },
   "type_워크북_순서배열": {
-    "sentences": [
-      {"label": "A", "text": "문장 텍스트 (원문 문장 그대로, 순서 섞어서 배열)"},
-      {"label": "B", "text": "문장 텍스트"},
-      {"label": "C", "text": "문장 텍스트"}
+    "first_sentence": "고정 첫 문장 (원문 첫 번째 문장 그대로)",
+    "chunks": [
+      {"label": "A", "text": "두 번째 문장. 세 번째 문장."},
+      {"label": "B", "text": "네 번째 문장. 다섯 번째 문장."},
+      {"label": "C", "text": "여섯 번째 문장. 일곱 번째 문장."}
     ],
-    "answer": "C-A-B-... (올바른 순서)"
+    "answer": "C-A-B (올바른 순서)"
+  },
+  "type_워크북_삽입": {
+    "insert_sentence": "삽입할 문장 - 지문에서 반전을 주는 문장, 요지가 되는 문장, 또는 접속사(However/Moreover/Therefore 등)로 시작하는 문장 하나를 선택",
+    "passage_with_positions": "삽입 문장을 제거한 나머지 지문을 문장 사이마다 ( ① ) ( ② ) ( ③ ) ( ④ ) ( ⑤ ) 번호를 삽입하여 표시. 예: 'Max Kleiber was a pioneer. ( ① ) He was born in 1893. ( ② ) Kleiber graduated in 1920. ( ③ ) He earned his doctorate in 1924. ( ④ ) He came to UC Davis. ( ⑤ ) He received awards.'",
+    "answer": 3
+  },
+  "type_워크북_빈칸단어": {
+    "passage_with_blank": "지문에서 요지를 나타내는 핵심 단어 하나를 ______(으)로 대체한 전체 지문 텍스트",
+    "choices": ["정답단어", "오답단어2", "오답단어3", "오답단어4", "오답단어5"],
+    "answer": 1
+  },
+  "type_워크북_빈칸문장": {
+    "passage_with_blank": "지문에서 요지를 나타내는 핵심 구절(5-10단어 정도)을 ______(으)로 대체한 전체 지문 텍스트",
+    "choices": ["정답구절(5-10단어)", "오답구절2", "오답구절3", "오답구절4", "오답구절5"],
+    "answer": 1
+  },
+  "type_워크북_요약": {
+    "summary_with_blanks": "지문 전체 내용을 한 문장으로 요약한 영어 문장. (A)와 (B) 두 곳에 빈칸 표시. 예: 'Humans evolved to (A)______ in groups, but modern (B)______ has weakened this natural tendency.'",
+    "choices": [
+      {"num": 1, "A": "단어A1", "B": "단어B1"},
+      {"num": 2, "A": "단어A2", "B": "단어B2"},
+      {"num": 3, "A": "단어A3", "B": "단어B3"},
+      {"num": 4, "A": "단어A4", "B": "단어B4"},
+      {"num": 5, "A": "단어A5", "B": "단어B5"}
+    ],
+    "answer": 1
   }
 }
 
@@ -118,38 +134,46 @@ ${passage}
 
 1. **문장 분리**: 마침표(.), 물음표(?), 느낌표(!) 기준으로 모든 문장을 개별 분리
    - 예시: 지문에 7개 문장이 있으면 sentences 배열에 7개 객체 필요
-2. **핵심어휘**: 20개의 단어로 선정 (수능 난이도).
-   - meanings: 첫 번째는 반드시 본문 문맥에서 사용된 뜻, 이후 주요 뜻들을 추가 (있는 만큼 자연스럽게)
-   - synonyms: 실제 영어 동의어 단어들로 구성 (메타 설명 금지)
-   - antonyms: **반의어가 있는 단어는 반드시 채워야 함.** 예: tendency→aversion/reluctance, cooperate→compete/oppose, limited→abundant/plentiful, nomadic→settled/stationary. 없는 경우에만 빈 배열.
+2. **핵심어휘**: 15-20개의 단어로 선정.
+   - **반드시 고등학교 2, 3학년 수준의 단어만 선정**: 동사, 명사, 부사, 형용사만 포함.
+   - **숙어(phrasal verb/idiom)도 포함**: 예를 들어 'look forward to'는 하나의 숙어로 처리 (pos: phr.)
+   - **준동사는 동사원형으로**: 지문에 'born'이 있으면 'be born' 또는 'bear'로, 'running'이 있으면 'run'으로 변경
+   - **쉬운 단어 제외**: help, college, soon, good, bad, make, go, come, think, know 등 중학교 수준 단어 제외
+   - **반드시 고2 수준 이상만**: metabolism, paradigm, cooperative, nuanced, paradox 등의 수준
+   - meanings: 첫 번째는 반드시 본문 문맥에서 사용된 뜻. **뜻은 1~4개 유동적으로 — 억지로 2개로 맞추지 말 것**
+   - synonyms: **있는 만큼만** — 없으면 빈 배열, 너무 억지로 만들지 말 것
+   - antonyms: **반의어가 있는 단어는 반드시 채워야 함. 있는 만큼만, 없으면 빈 배열**
 3. **논리흐름**: 지문의 논리 전개를 2~4단계로 나누어 작성하세요.
-   - 소제목: 해당 단계의 핵심 주제를 명사형으로 간결하게 (예: "자원 부족 환경에서의 생존 전략인 공유와 협력")
-   - 내용: 2~3문장으로 작성. 첫 문장은 핵심 주장을 명확히 서술하고, 이후 문장은 본문의 구체적 근거나 심화 설명을 포함할 것. 단순 요약이 아닌 논리적 흐름이 드러나게 서술하세요.
-4.  **웹툰캡션**: 본문의 핵심 메시지를 함축하는 장면 4개를 DALL-E 이미지 생성용 영문 프롬프트로 작성하세요.
-   - 스타일: "cartoon comic style, bold outlines, simple flat colors, speech bubble with short English text"를 각 캡션 앞에 고정으로 붙이세요.
-   - 내용: 본문 문장을 직역하지 말고, 핵심 메시지를 과장되고 상징적인 장면으로 함축하세요.
-     (예: 풍요=집 주변에 높은 울타리와 자물쇠, 단절=군중 속 혼자 폰 보는 사람)
-   - 말풍선에 들어갈 짧은 영문 슬로건도 함께 포함하세요. (예: "SHARE TO SURVIVE.", "MORE STUFF, LESS SHARING.")
-   - 4컷이 하나의 스토리 흐름을 가지도록 구성하세요.
+4. **웹툰캡션**: 본문의 핵심 메시지를 함축하는 장면 4개를 DALL-E 이미지 생성용 영문 프롬프트로 작성하세요.
+   - 스타일: "cartoon comic style, bold outlines, simple flat colors"를 각 캡션 앞에 고정으로 붙이세요.
+   - 말풍선에 들어갈 짧은 영문 슬로건도 함께 포함하세요.
+   - 반드시 4개 캡션만 작성하세요.
 
 **다시 강조: type_03, type_09는 sentences 배열에 지문의 모든 문장이 포함되어야 합니다!**
 
-5. **어법선택 passage_marked**: 지문 원문을 그대로 쓰되, 번호[정답단어/오답단어] 형식 삽입.
-   - 예: "For a species 1[born/bearing] in a time 2[when/which] resources 3[were/was] limited"
-   - 대괄호 안은 반드시 실제 영어 단어 두 개 (정답 먼저). correct/wrong 같은 메타 텍스트 절대 금지.
-   - 내신 빈출 어법: 수일치, 관계사, 분사, to부정사/동명사, 형용사/부사, 접속사, 병렬, 시제 등
-   - **목표: 거의 모든 문장에 최소 1~2개씩 삽입. 지문 문장 수 × 1.5개 이상 (예: 7문장이면 10개 이상)**
-6. **어법수정 passage_marked**: 지문 원문을 그대로 쓰되, 오류 위치 단어를 번호[틀린단어] 로 교체.
-   - 예: "For a species 1[borned] in a time when resources 2[was] limited"
-   - 대괄호 안은 반드시 틀린 형태의 실제 영어 단어. wrongform/error 같은 메타 텍스트 절대 금지.
-   - **목표: 거의 모든 문장에 최소 1개씩. 지문 문장 수와 동일하거나 그 이상**
-7. **어휘선택 passage_marked**: 지문 원문을 그대로 쓰되, 번호[정답어휘/반의어휘] 형식 삽입.
-   - 예: "our natural 1[tendency/aversion] to share and cooperate is 2[complicated/simplified]"
-   - 대괄호 안은 실제 영어 단어 두 개 (정답 먼저, 반의어/오류 어휘 두 번째). correct/wrong 절대 금지.
-   - **목표: 거의 모든 문장에 최소 1개씩. 지문 문장 수와 동일하거나 그 이상**
-8. **순서배열**: 지문의 모든 문장을 랜덤 순서로 섞어 (A)(B)(C)... 레이블 부여.
-   - 원문 문장 그대로 사용 (수정 없이)
-   - answer 필드에 올바른 순서 표기 (예: "C-A-F-B-E-D-G")
+5. **어법선택 passage_marked**: 고2 내신 필수 어법에서 **반드시 6-8곳** 선택하여 번호[정답단어/오답단어] 형식 삽입.
+   - 적용 어법 유형: 동사/준동사 자리, 수동태/능동태, 5형식 목적격보어 형태, 동사의 수일치, 관계사/접속사 구분, 보어 자리 형용사/부사 구별, 비교급 수일치, 도치 문장 수일치, 대동사 적절성, 가정법 적절성
+   - **반드시 6-8개 포인트 삽입. 절대로 3개 이하로 만들지 말 것.** 각 문장마다 최소 1개씩 찾아 넣을 것.
+   - 대괄호 안은 실제 영어 단어 두 개 (정답 먼저). 메타 텍스트 절대 금지.
+6. **어휘선택 passage_marked**: 고2-3학년 수준 어휘 7-9곳에 번호[정답/반의어] 형식 삽입.
+   - **정답과 오답은 반드시 반의어(antonym) 관계**: tendency↔aversion, abundant↔scarce, cooperate↔compete 등
+   - **목표: 7-9곳 랜덤 선택**
+7. **순서배열**: 지문의 첫 문장은 first_sentence에 고정. 나머지 문장을 2개씩 묶어 chunks 배열 구성.
+   - 2문장씩 묶어서 하나의 label (A, B, C...) 부여
+   - chunks를 랜덤 순서로 섞기
+   - answer 필드에 올바른 순서 (예: "C-A-B")
+8. **삽입**: 지문에서 반전/요지/접속사 시작 문장 하나 선택하여 insert_sentence로 분리.
+   - 남은 지문에 ( ① )~( ⑤ ) 삽입 위치 표시 (총 5곳)
+   - answer는 정답 번호 (1-5 정수)
+9. **빈칸단어**: 지문의 핵심 단어(요지 관련) 하나를 ______으로 교체.
+   - choices[0]이 정답 (answer: 1)
+   - 오답 4개는 같은 품사이나 의미상 맞지 않는 단어
+10. **빈칸문장(구절)**: 지문의 핵심 구절(5-10단어)을 ______으로 교체.
+    - choices[0]이 정답 (answer: 1)
+    - 오답 4개는 비슷한 길이이나 의미상 맞지 않는 구절
+11. **요약**: 지문 전체를 한 문장 영어 요약. (A)와 (B) 두 빈칸.
+    - choices의 정답 번호는 answer 필드에 (1-5 정수)
+    - 오답들은 그럴듯해 보이지만 의미상 맞지 않는 단어 쌍
 
 JSON만 출력하세요.`;
 
@@ -244,14 +268,20 @@ JSON만 출력하세요.`;
           `Panel ${idx + 1}: ${desc}`
         ).join('\n');
 
-        const imagePrompt = `Create a single image divided into exactly 4 panels arranged in a 2x2 grid, in a clean webtoon/comic strip style with simple bold outlines and flat colors.
-Each panel illustrates a key scene from an English passage about: "${jsonData.passage.english_title}".
+        const imagePrompt = `A single rectangular image containing EXACTLY 4 comic panels in a strict 2x2 grid layout (2 panels on top row, 2 panels on bottom row). IMPORTANT: create exactly 4 panels, no more, no less. Each panel is separated by clear thick black borders.
+
+This is a 4-panel webtoon/comic strip about: "${jsonData.passage.english_title}".
 
 ${panelDescriptions}
 
-Style: Modern webtoon / comic strip, clean bold line art, flat bright colors, simple backgrounds. Abstract cartoon characters only — no specific ethnicity, religion, or cultural identity.
-Each panel should have a short speech bubble or caption with a punchy English slogan (e.g. "SHARE TO SURVIVE", "MORE STUFF, LESS SHARING").
-All 4 panels must be clearly separated by thin black borders and have a consistent art style.`;
+Style requirements:
+- EXACTLY 4 panels in a 2x2 grid (top-left, top-right, bottom-left, bottom-right)
+- Clean webtoon style with bold black outlines and flat bright colors
+- Simple cartoon characters (no specific ethnicity, religion, or cultural identity)
+- Each panel has a short English speech bubble or caption text
+- Clear thick black grid lines separating all 4 panels
+- Consistent art style across all panels
+- Full image fills the entire canvas with no empty space`;
 
         const imageResponse = await openai.images.generate({
           model: 'dall-e-3',
@@ -267,8 +297,10 @@ All 4 panels must be clearly separated by thin black borders and have a consiste
         // 이미지 실패해도 나머지 진행
       }
 
-      // JSON → HTML 변환
-      const htmlResults = renderAllTypes(jsonData, webtoonImageUrl, pageTitle);
+      // JSON → HTML 변환 (기본워크북 선택시에만)
+      const htmlResults = (!selectedTypes || selectedTypes.기본워크북)
+        ? renderAllTypes(jsonData, webtoonImageUrl, pageTitle)
+        : {};
 
       // 결과 저장
       for (const [type, html] of Object.entries(htmlResults)) {
@@ -284,22 +316,23 @@ All 4 panels must be clearly separated by thin black borders and have a consiste
       allPassagesData.push(jsonData);
     }
 
-    // 워크북 (전체 지문 합산)
-    if (!selectedTypes || selectedTypes.wb_어법선택) {
-      allResults['워크북_어법선택'] = { type: '워크북_어법선택', title: '어법 선택', content: render_워크북_어법선택(allPassagesData, pageTitle), passageNum: -1 };
-    }
-    if (!selectedTypes || selectedTypes.wb_어법수정) {
-      allResults['워크북_어법수정'] = { type: '워크북_어법수정', title: '어법 수정', content: render_워크북_어법수정(allPassagesData, pageTitle), passageNum: -1 };
-    }
-    if (!selectedTypes || selectedTypes.wb_어휘선택) {
-      allResults['워크북_어휘선택'] = { type: '워크북_어휘선택', title: '어휘 선택', content: render_워크북_어휘선택(allPassagesData, pageTitle), passageNum: -1 };
-    }
-    if (!selectedTypes || selectedTypes.wb_순서배열) {
-      allResults['워크북_순서배열'] = { type: '워크북_순서배열', title: '순서 배열', content: render_워크북_순서배열(allPassagesData, pageTitle), passageNum: -1 };
+    // 문제워크북: 지문별로 7유형 통합 1문서
+    if (!selectedTypes || selectedTypes.문제워크북) {
+      for (let i = 0; i < allPassagesData.length; i++) {
+        const content = render_문제워크북(allPassagesData[i], pageTitle);
+        if (content) {
+          allResults[`워크북_문제_passage${i}`] = {
+            type: '워크북_문제',
+            title: '문제 워크북',
+            content,
+            passageNum: i
+          };
+        }
+      }
     }
 
-    // 단어 확인 테스트 (전체 지문 합산, 핵심어휘 선택된 경우에만)
-    if (!selectedTypes || selectedTypes.type08) {
+    // 단어 확인 테스트 (전체 지문 합산, 기본워크북 선택된 경우에만)
+    if (!selectedTypes || selectedTypes.기본워크북) {
       allResults['단어테스트'] = {
         type: '단어테스트',
         title: '단어 확인 테스트',
