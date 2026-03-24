@@ -123,14 +123,29 @@ export function render03_문장해석(data, pageTitle = '') {
   const sentences = type_03_문장해석?.sentences ?? [];
   const passageCode = passage.original_text?.match(/[A-Z]\d+_\d+_\d+/)?.[0] ?? '';
 
+  // vocab 먼저 정의 (하이라이트에 사용)
+  const vocab = type_08_핵심어휘?.words ?? [];
+
+  // 단어집 단어를 영어 문장 안에서 연두색으로 하이라이트
+  function highlightVocab(text) {
+    if (!vocab.length) return text;
+    let result = text;
+    // 긴 구(숙어)부터 처리해야 단어가 겹치지 않음
+    const sorted = [...vocab].sort((a, b) => b.word.length - a.word.length);
+    for (const v of sorted) {
+      const w = v.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(?<![<>a-zA-Z])(${w})(?![a-zA-Z>])`, 'gi');
+      result = result.replace(regex, `<span class="vocab-word">$1</span>`);
+    }
+    return result;
+  }
+
   const sentenceRows = sentences.map((s, i) => `
   <div class="sentence-row">
     <div class="num">${s.num}</div>
-    <div class="english-text">${s.english}</div>
+    <div class="english-text">${highlightVocab(s.english)}</div>
     <div class="korean-text">${s.korean_natural}</div>
   </div>`).join('');
-
-  const vocab = type_08_핵심어휘?.words ?? [];
   const wordsSection = vocab.length > 0 ? `
   <div class="words-section">
     <div class="words-header">| WORDS &amp; PHRASES</div>
@@ -183,6 +198,7 @@ export function render03_문장해석(data, pageTitle = '') {
   .word-headword { font-weight:700; color:#5B8A00; margin-right:2px; }
   .word-pos { color:#5B8A00; font-style:italic; margin-right:3px; font-size:9px; }
   .word-meaning { color:#444; }
+  .vocab-word { color:#5B8A00; font-weight:700; }
 
   .words-push { flex:1; }
   @media print { body { width:100% !important; margin:0 !important; padding:0 !important; } .sentence-row { break-inside:avoid; } }

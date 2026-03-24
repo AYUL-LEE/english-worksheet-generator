@@ -138,8 +138,9 @@ ${passage}
    - **반드시 고등학교 2, 3학년 수준의 단어만 선정**: 동사, 명사, 부사, 형용사만 포함.
    - **숙어(phrasal verb/idiom)도 포함**: 예를 들어 'look forward to'는 하나의 숙어로 처리 (pos: phr.)
    - **준동사는 동사원형으로**: 지문에 'born'이 있으면 'be born' 또는 'bear'로, 'running'이 있으면 'run'으로 변경
-   - **쉬운 단어 제외**: help, college, soon, good, bad, make, go, come, think, know 등 중학교 수준 단어 제외
-   - **반드시 고2 수준 이상만**: metabolism, paradigm, cooperative, nuanced, paradox 등의 수준
+   - **아래 쉬운 단어는 절대 포함 금지** (중학교 이하 수준): help, college, soon, good, bad, make, go, come, think, know, use, give, take, keep, find, say, tell, ask, show, work, study, learn, name, life, time, year, day, way, place, people, person, thing, part, also, very, just, only, even, still, well, often, here, there, first, last, new, old, small, large, high, low, long, short, many, much, few, less, more, most, same, own, each, other, another, both, either, every, any, some, all, most, such, like, right, left, back, next, then, now, where, when, why, how, what, which, who
+   - **반드시 고2 수준 이상만**: metabolism, paradigm, cooperative, nuanced, paradox, prominent, distinguished, subsequent, conduct, outstanding, nutrition, molecular, hypothesis 등의 수준
+   - **선택 기준**: 문장해석 페이지의 WORDS & PHRASES 단어장으로 활용되므로, 학생이 모를 만한 단어 위주로 엄선
    - meanings: 첫 번째는 반드시 본문 문맥에서 사용된 뜻. **뜻은 1~4개 유동적으로 — 억지로 2개로 맞추지 말 것**
    - synonyms: **있는 만큼만** — 없으면 빈 배열, 너무 억지로 만들지 말 것
    - antonyms: **반의어가 있는 단어는 반드시 채워야 함. 있는 만큼만, 없으면 빈 배열**
