@@ -168,11 +168,11 @@ export function render03_문장해석(data, pageTitle = '') {
   .section-title .english { font-weight:400; color:#555; font-style:italic; }
 
   /* 문장 행 */
-  .sentence-row { display:grid; grid-template-columns:28px 3fr 2fr; gap:0 12px; padding:13px 0; border-bottom:1px solid #F0F0F0; align-items:start; break-inside:avoid; }
+  .sentence-row { display:grid; grid-template-columns:28px 3fr 2fr; gap:0 12px; padding:18px 0; border-bottom:1px solid #F0F0F0; align-items:start; break-inside:avoid; }
   .sentence-row:last-of-type { border-bottom:none; }
-  .num { font-size:10px; font-weight:700; color:#5B8A00; padding-top:1px; white-space:nowrap; }
-  .english-text { font-size:11px; line-height:1.75; font-weight:500; color:#111; word-break:keep-all; text-align:justify; }
-  .korean-text { font-size:9.5px; line-height:1.6; color:#444; word-break:keep-all; }
+  .num { font-size:11px; font-weight:700; color:#5B8A00; padding-top:1px; white-space:nowrap; }
+  .english-text { font-size:12.5px; line-height:1.85; font-weight:500; color:#111; word-break:keep-all; text-align:justify; }
+  .korean-text { font-size:10.5px; line-height:1.65; color:#444; word-break:keep-all; }
 
   /* WORDS & PHRASES */
   .words-section { margin-top:18px; border-top:1.5px solid #1a1a1a; padding-top:8px; }
@@ -642,7 +642,10 @@ export function render_단어테스트(allData, pageTitle = '') {
 // 09_한줄해석.html
 export function render09_한줄해석(data, pageTitle = '') {
   const { passage, type_09_한줄해석, type_03_문장해석 } = data;
-  const _sentences09 = type_09_한줄해석?.sentences ?? type_03_문장해석?.sentences ?? [];
+  const s09 = type_09_한줄해석?.sentences ?? [];
+  const s03 = type_03_문장해석?.sentences ?? [];
+  // GPT가 type_09를 일부만 반환할 경우 더 많은 쪽을 사용
+  const _sentences09 = s09.length >= s03.length ? s09 : s03;
 
   return `
 <!DOCTYPE html>
@@ -663,12 +666,12 @@ export function render09_한줄해석(data, pageTitle = '') {
   .section-label { background:#EDF8DC; border-left:3px solid #5B8A00; padding:6px 10px; margin-bottom:12px; border-radius:0 4px 4px 0; }
   .section-label .korean { font-weight:700; font-size:11px; color:#1a1a1a; }
 
-  .item { border:1px solid #F0E0D0; border-radius:6px; overflow:hidden; margin-bottom:10px; display:flex; flex-direction:column; break-inside:avoid; }
-  .item-head { display:flex; align-items:flex-start; gap:8px; padding:8px 12px; background:#F2F8E0; border-bottom:1px dashed #F0E0D0; }
+  .item { border:1px solid #D0E8A0; border-radius:6px; overflow:hidden; margin-bottom:10px; display:flex; flex-direction:column; break-inside:avoid; }
+  .item-head { display:flex; align-items:flex-start; gap:8px; padding:8px 12px; background:#F2F8E0; border-bottom:1px dashed #C8E090; }
   .num { color:#5B8A00; font-weight:700; font-size:11px !important; flex-shrink:0; min-width:22px; }
   .eng { color:#111827; font-weight:600; font-size:11px !important; flex:1; line-height:1.6; }
-  .write-area { position:relative; min-height:44px; margin:0 14px 10px 14px; }
-  .write-line { position:absolute; bottom:0; left:0; right:0; border-top:1.5px solid #DDD; }
+  .write-area { display:flex; flex-direction:column; justify-content:space-evenly; min-height:72px; margin:6px 14px 10px 14px; gap:0; }
+  .write-line { border-bottom:1.5px solid #DDD; flex:1; min-height:22px; }
 
   @media print { body { width:100% !important; margin:0 !important; padding:0 !important; } .item { break-inside:avoid; } }
 </style>
@@ -685,7 +688,7 @@ export function render09_한줄해석(data, pageTitle = '') {
       <div class="num">${String(s.num).padStart(2, '0')}</div>
       <div class="eng">${s.english}</div>
     </div>
-    <div class="write-area"><div class="write-line"></div></div>
+    <div class="write-area"><div class="write-line"></div><div class="write-line"></div><div class="write-line"></div></div>
   </div>
   `).join('')}
 </body>
