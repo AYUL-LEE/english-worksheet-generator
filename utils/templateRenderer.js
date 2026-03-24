@@ -184,10 +184,11 @@ export function render03_문장해석(data, pageTitle = '') {
   .word-pos { color:#5B8A00; font-style:italic; margin-right:3px; font-size:9px; }
   .word-meaning { color:#444; }
 
+  .words-push { flex:1; }
   @media print { body { width:100% !important; margin:0 !important; padding:0 !important; } .sentence-row { break-inside:avoid; } }
 </style>
 </head>
-<body>
+<body style="display:flex; flex-direction:column; min-height:297mm;">
   <div class="page-header">
     <div class="sub">${pageTitle}  -  문장해석</div>
     <div class="academy">평택 베리타스학원</div>
@@ -199,6 +200,7 @@ export function render03_문장해석(data, pageTitle = '') {
 
   ${sentenceRows}
 
+  <div class="words-push"></div>
   ${wordsSection}
 </body>
 </html>
@@ -520,8 +522,8 @@ export function render08_핵심어휘(data, pageTitle = '') {
   .td-word { width:110px; }
   .word-en { font-weight:700; color:#5B8A00; font-size:11px; }
   .word-pos { color:#999; font-style:italic; font-size:9px; margin-left:4px; }
-  .td-meaning { width:120px; color:#1a1a1a; }
-  .meaning-main { font-weight:600; }
+  .td-meaning { color:#1a1a1a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; }
+  .meaning-main { font-weight:600; white-space:nowrap; }
   .meaning-sub { color:#666; font-size:9.5px; }
   .td-syn { color:#0D7A5F; }
   .td-ant { color:#7C3AED; }
