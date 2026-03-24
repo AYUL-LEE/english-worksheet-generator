@@ -125,11 +125,17 @@ export function render03_문장해석(data, pageTitle = '') {
 
   const vocab = type_08_핵심어휘?.words ?? [];
 
+  // GPT가 HTML/마크다운을 섞어 넣는 경우를 방지하는 순수 텍스트 변환
+  const plainText = (text) => (text ?? '')
+    .replace(/<[^>]+>/g, '')       // HTML 태그 제거
+    .replace(/\*\*(.+?)\*\*/g, '$1') // **bold** 마크다운 제거
+    .replace(/\*(.+?)\*/g, '$1');    // *italic* 마크다운 제거
+
   const sentenceRows = sentences.map((s, i) => `
   <div class="sentence-row">
     <div class="num">${s.num}</div>
-    <div class="english-text">${s.english}</div>
-    <div class="korean-text">${s.korean_natural}</div>
+    <div class="english-text">${plainText(s.english)}</div>
+    <div class="korean-text">${plainText(s.korean_natural)}</div>
   </div>`).join('');
   const wordsSection = vocab.length > 0 ? `
   <div class="words-section">
