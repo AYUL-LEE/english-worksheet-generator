@@ -104,7 +104,7 @@ export function render01_본문노트(data, webtoonImageUrl = null, pageTitle = 
   <div class="text-content">${numberedText}</div>
 
   <div class="flow-section">
-    <div class="flow-section-title">[ 지문논리 FLOW ]</div>
+    <div class="flow-section-title">[ 지문흐름 이해 ]</div>
     <div class="flow-box">
       ${logicalFlowHTML}
     </div>
@@ -168,7 +168,7 @@ export function render03_문장해석(data, pageTitle = '') {
   .section-title .english { font-weight:400; color:#888; font-style:italic; font-size:10px; display:block; }
 
   /* 문장 행 */
-  .sentence-row { display:grid; grid-template-columns:28px 3fr 2fr; gap:0 12px; padding:18px 0; border-bottom:1px solid #F0F0F0; align-items:start; break-inside:avoid; }
+  .sentence-row { display:grid; grid-template-columns:28px 3fr 2fr; gap:0 12px; padding:26px 0; border-bottom:1px solid #F0F0F0; align-items:start; break-inside:avoid; }
   .sentence-row:last-of-type { border-bottom:none; }
   .num { font-size:11px; font-weight:700; color:#5B8A00; padding-top:1px; white-space:nowrap; }
   .english-text { font-size:12.5px; line-height:1.85; font-weight:500; color:#111; word-break:keep-all; text-align:justify; }
@@ -670,7 +670,7 @@ export function render09_한줄해석(data, pageTitle = '') {
   .item-head { display:flex; align-items:flex-start; gap:8px; padding:8px 12px; background:#F2F8E0; border-bottom:1px dashed #C8E090; }
   .num { color:#5B8A00; font-weight:700; font-size:11px !important; flex-shrink:0; min-width:22px; }
   .eng { color:#111827; font-weight:600; font-size:11px !important; flex:1; line-height:1.6; }
-  .write-area { display:flex; flex-direction:column; justify-content:space-evenly; min-height:72px; margin:6px 14px 10px 14px; gap:0; }
+  .write-area { display:flex; flex-direction:column; justify-content:space-evenly; min-height:48px; margin:6px 14px 10px 14px; gap:0; }
   .write-line { flex:1; min-height:22px; }
 
   @media print { body { width:100% !important; margin:0 !important; padding:0 !important; } .item { break-inside:avoid; } }
@@ -688,7 +688,7 @@ export function render09_한줄해석(data, pageTitle = '') {
       <div class="num">${String(s.num).padStart(2, '0')}</div>
       <div class="eng">${s.english}</div>
     </div>
-    <div class="write-area"><div class="write-line"></div><div class="write-line"></div><div class="write-line"></div></div>
+    <div class="write-area"><div class="write-line"></div><div class="write-line"></div></div>
   </div>
   `).join('')}
 </body>

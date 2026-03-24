@@ -268,20 +268,20 @@ JSON만 출력하세요.`;
           `Panel ${idx + 1}: ${desc}`
         ).join('\n');
 
-        const imagePrompt = `A single rectangular image containing EXACTLY 4 comic panels in a strict 2x2 grid layout (2 panels on top row, 2 panels on bottom row). IMPORTANT: create exactly 4 panels, no more, no less. Each panel is separated by clear thick black borders.
+        const imagePrompt = `STRICT REQUIREMENT: Draw EXACTLY 4 panels and NO MORE. This image must be divided into a 2x2 grid with exactly 4 panels total — top-left (Panel 1), top-right (Panel 2), bottom-left (Panel 3), bottom-right (Panel 4). Do NOT draw 6 panels, do NOT draw 3 panels. Only 4 panels.
 
-This is a 4-panel webtoon/comic strip about: "${jsonData.passage.english_title}".
+This is a 4-panel webtoon/comic strip story about: "${jsonData.passage.english_title}".
 
 ${panelDescriptions}
 
-Style requirements:
-- EXACTLY 4 panels in a 2x2 grid (top-left, top-right, bottom-left, bottom-right)
+Visual layout rules (MANDATORY):
+- The entire image is split into EXACTLY 4 equal sections by two straight thick black lines: one horizontal line in the middle, one vertical line in the middle.
+- This creates exactly 4 rectangular panels: top-left, top-right, bottom-left, bottom-right.
 - Clean webtoon style with bold black outlines and flat bright colors
 - Simple cartoon characters (no specific ethnicity, religion, or cultural identity)
 - Each panel has a short English speech bubble or caption text
-- Clear thick black grid lines separating all 4 panels
-- Consistent art style across all panels
-- Full image fills the entire canvas with no empty space`;
+- Consistent art style across all 4 panels
+- Fill entire canvas — no white borders or empty space outside panels`;
 
         const imageResponse = await openai.images.generate({
           model: 'dall-e-3',
