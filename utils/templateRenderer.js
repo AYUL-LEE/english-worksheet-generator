@@ -615,12 +615,12 @@ export function render_단어테스트(allData, pageTitle = '') {
 
   table { width:100%; border-collapse:collapse; }
   thead tr { border-bottom:1.5px solid #1a1a1a; }
-  th { font-size:9.5px; font-weight:700; color:#555; padding:5px 6px; text-align:left; }
+  th { font-size:9.5px; font-weight:700; color:#555; padding:5px 6px; text-align:left; white-space:nowrap; }
   tbody tr { border-bottom:1px solid #EBEBEB; }
   td { padding:6px 6px; font-size:10px; height:22px; }
   .num { color:#999; width:20px; }
   .word { font-weight:700; color:#5B8A00; width:80px; }
-  .pos { color:#999; font-style:italic; font-size:9px; width:26px; }
+  .pos { color:#999; font-style:italic; font-size:9px; width:36px; white-space:nowrap; }
   .blank { border-bottom:1px solid #AAA; min-height:18px; }
 
   @media print { body { width:100% !important; margin:0 !important; padding:0 !important; } .row { break-inside:avoid; } }
