@@ -199,6 +199,7 @@ function getSelectedTypes() {
     return {
         기본워크북: safeCheck('기본워크북'),
         문제워크북: safeCheck('문제워크북'),
+        분석서: safeCheck('분석서'),
     };
 }
 
@@ -379,6 +380,16 @@ function generatePreviewHTML(results, passageCount, selectedTypes) {
     }
   }
 
+  // 분석서: 지문별 1문서 출력
+  for (let passageIndex = 0; passageIndex < passageCount; passageIndex++) {
+    const key = `분석서_passage${passageIndex}`;
+    const result = results[key];
+    if (result && result.content) {
+      html += result.content;
+      html += '<div class="page-break"></div>';
+    }
+  }
+
   html += `</body></html>`;
   return html;
 }
@@ -487,7 +498,7 @@ function hidePreview() {
 
 // 전체 선택 함수
 function selectAllTypes() {
-    const ids = ['기본워크북', '문제워크북'];
+    const ids = ['기본워크북', '문제워크북', '분석서'];
     const allChecked = ids.every(id => document.getElementById(id)?.checked);
     ids.forEach(id => {
         const el = document.getElementById(id);

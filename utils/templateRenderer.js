@@ -1104,6 +1104,152 @@ ${rows.join('<div style="margin-top:10px;"></div>')}
 </body></html>`;
 }
 
+// 분석서.html
+export function render_분석서(data, pageTitle = '') {
+  const { passage, type_분석서 } = data;
+  if (!type_분석서) return '<html><body>분석서 데이터 없음</body></html>';
+
+  const PINK_NUMS = ['①','②','③','④','⑤','⑥','⑦','⑧','⑨','⑩'];
+
+  // chunked_english 파싱: ①②, **bold**, / 처리
+  function parseChunked(text) {
+    if (!text) return '';
+    // **bold** → <strong>
+    let t = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    // ①②③... → 핑크 뱃지
+    t = t.replace(/[①②③④⑤⑥⑦⑧⑨⑩]/g, m => `<span class="gram-badge">${m}</span>`);
+    // / → 슬래시 구분자
+    t = t.replace(/ \/ /g, ' <span class="slash">/</span> ');
+    return t;
+  }
+
+  const summaryBox = type_분석서.summary ? `
+  <div class="summary-box">
+    <div class="summary-row">
+      <span class="sum-label">요약</span>
+      <span class="sum-text">${type_분석서.summary.korean_summary ?? ''}</span>
+    </div>
+    <div class="sum-divider"></div>
+    <div class="sum-meta-row">
+      <span class="sum-tag topic-tag">요지</span>
+      <span class="sum-meta-text">${type_분석서.summary.english_topic ?? ''}</span>
+    </div>
+    <div class="sum-meta-row">
+      <span class="sum-tag title-tag">제목</span>
+      <span class="sum-meta-text">${type_분석서.summary.english_title ?? ''}</span>
+    </div>
+  </div>` : '';
+
+  const sentences = (type_분석서.sentences ?? []).map(s => {
+    const tagsHtml = (s.tags ?? []).map(t =>
+      `<span class="tag-item"><span class="tag-num">${PINK_NUMS[t.num-1] ?? t.num}</span><span class="tag-text">${t.text}</span></span>`
+    ).join('');
+    const badgesHtml = (s.badges ?? []).map(b =>
+      `<span class="special-badge">${b}</span>`
+    ).join('');
+    const wordsHtml = (s.words ?? []).map(w => {
+      const syns = (w.synonyms ?? []).join(', ');
+      const ants = (w.antonyms ?? []).join(', ');
+      const antPart = ants ? ` <span class="ant-arrow">↔</span> ${ants}` : '';
+      const synPart = syns ? ` = ${syns}` : '';
+      return `<div class="word-line"><span class="wl-word">${w.word}</span> <span class="wl-ko">${w.meaning_ko}</span>${synPart ? `<span class="wl-syn">${synPart}</span>` : ''}${antPart ? `<span class="wl-ant">${antPart}</span>` : ''}</div>`;
+    }).join('');
+    const gpHtml = (s.grammar_points ?? []).map(gp =>
+      `<div class="gp-row"><span class="gp-label">어법 POINT</span><span class="gp-text">${gp}</span></div>`
+    ).join('');
+
+    return `
+<div class="sent-block">
+  <div class="tag-bar">${tagsHtml}${badgesHtml}</div>
+  <div class="sent-main">
+    <span class="sent-num">${s.num}.</span>
+    <span class="sent-eng">${parseChunked(s.chunked_english)}</span>
+  </div>
+  <div class="sent-ko">${(s.chunked_korean ?? '').replace(/ \/ /g, ' <span class="slash-ko">/</span> ')}</div>
+  ${wordsHtml ? `<div class="words-box">${wordsHtml}</div>` : ''}
+  ${gpHtml}
+</div>`;
+  }).join('');
+
+  return `<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4; margin: 14mm 16mm; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter','Noto Sans KR',sans-serif; width:210mm; min-height:297mm; margin:0 auto; padding:14mm 16mm; background:#fff; color:#1a1a1a; font-size:11px; line-height:1.45; }
+  .page-header { border-bottom:2px solid #5B8A00; padding-bottom:6px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; }
+  .page-header .sub { font-size:9px; color:#5B8A00; font-weight:600; letter-spacing:.5px; }
+  .page-header .badge-analy { background:#5B8A00; color:#fff; font-size:9px; font-weight:700; padding:3px 10px; border-radius:20px; }
+
+  /* 요약 박스 */
+  .summary-box { background:#F2F8E0; border:1.5px solid #C8E6A0; border-radius:8px; padding:12px 16px; margin-bottom:16px; }
+  .summary-row { display:flex; gap:10px; align-items:flex-start; margin-bottom:8px; }
+  .sum-label { background:#5B8A00; color:#fff; font-size:9px; font-weight:700; padding:2px 8px; border-radius:4px; white-space:nowrap; flex-shrink:0; margin-top:2px; }
+  .sum-text { font-size:13px; font-weight:700; color:#1a1a1a; line-height:1.5; }
+  .sum-divider { border-top:1px dashed #C8E6A0; margin:8px 0; }
+  .sum-meta-row { display:flex; gap:8px; align-items:baseline; margin-top:4px; }
+  .sum-tag { font-size:8.5px; font-weight:700; padding:1px 6px; border-radius:3px; white-space:nowrap; flex-shrink:0; }
+  .topic-tag { background:#EDF8DC; color:#5B8A00; border:1px solid #C8E6A0; }
+  .title-tag { background:#fff; color:#3A6B00; border:1px solid #A8D060; }
+  .sum-meta-text { font-size:10px; color:#444; font-style:italic; }
+
+  /* 문장 블록 */
+  .sent-block { border-bottom:1.5px dashed #D0E8A0; padding:10px 0 12px 0; margin-bottom:4px; }
+  .sent-block:last-child { border-bottom:none; }
+
+  /* 태그 바 */
+  .tag-bar { display:flex; flex-wrap:wrap; gap:5px 10px; margin-bottom:7px; align-items:center; }
+  .tag-item { display:flex; align-items:center; gap:4px; background:#EDF8DC; border:1px solid #C8E6A0; border-radius:20px; padding:2px 8px 2px 4px; }
+  .tag-num { background:#5B8A00; color:#fff; font-size:8.5px; font-weight:700; width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .tag-text { font-size:9px; color:#444; }
+  .special-badge { background:#3A6B00; color:#fff; font-size:8.5px; font-weight:700; padding:2px 8px; border-radius:12px; }
+
+  /* 문장 본문 */
+  .sent-main { display:flex; gap:8px; align-items:baseline; margin-bottom:5px; }
+  .sent-num { font-size:13px; font-weight:700; color:#1a1a1a; flex-shrink:0; }
+  .sent-eng { font-size:12.5px; font-weight:500; line-height:1.9; color:#111; word-break:keep-all; }
+  .sent-eng strong { font-weight:800; text-decoration:underline; text-decoration-thickness:1.5px; }
+  .gram-badge { display:inline-flex; align-items:center; justify-content:center; background:#5B8A00; color:#fff; font-size:9px; font-weight:700; width:16px; height:16px; border-radius:50%; margin:0 1px; vertical-align:middle; }
+  .slash { color:#AAAAAA; font-weight:400; }
+
+  /* 한글 해석 */
+  .sent-ko { font-size:10px; color:#555; margin-left:24px; margin-bottom:8px; line-height:1.6; }
+  .slash-ko { color:#CCCCCC; }
+
+  /* 단어 박스 */
+  .words-box { background:#F8FAF3; border:1px solid #E4F0C8; border-radius:6px; padding:8px 12px; margin-bottom:8px; display:flex; flex-direction:column; gap:3px; }
+  .word-line { font-size:10px; color:#222; line-height:1.5; }
+  .wl-word { font-weight:700; color:#3A6B00; margin-right:4px; }
+  .wl-ko { color:#444; margin-right:2px; }
+  .wl-syn { color:#555; }
+  .ant-arrow { color:#5B8A00; font-weight:700; }
+  .wl-ant { color:#555; }
+
+  /* 어법 POINT */
+  .gp-row { display:flex; gap:8px; align-items:flex-start; margin-bottom:5px; }
+  .gp-label { background:#EDF8DC; border:1px solid #C8E6A0; color:#3A6B00; font-size:8.5px; font-weight:700; padding:2px 7px; border-radius:3px; white-space:nowrap; flex-shrink:0; margin-top:1px; }
+  .gp-text { font-size:10px; color:#333; line-height:1.55; }
+
+  @media print { body { width:100% !important; margin:0 !important; padding:0 !important; } .sent-block { break-inside:avoid; } }
+</style>
+</head>
+<body>
+  <div class="page-header">
+    <div>
+      <div class="sub">${pageTitle}</div>
+      <div style="font-size:8.5px;color:#888;margin-top:2px;">${passage.english_title ?? ''}</div>
+    </div>
+    <div class="badge-analy">분석</div>
+  </div>
+  ${summaryBox}
+  ${sentences}
+</body>
+</html>`;
+}
+
 // 전체 HTML 생성 (모든 유형 합치기)
 export function renderAllTypes(jsonData, webtoonImageUrl = null, pageTitle = '리얼고 1학년 26년 1학기 중간고사 대비') {
   return {

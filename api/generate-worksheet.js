@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { renderAllTypes, render_단어테스트, render_워크북_어법선택, render_워크북_어법수정, render_워크북_어휘선택, render_워크북_순서배열, render_워크북_삽입, render_워크북_빈칸단어, render_워크북_빈칸문장, render_워크북_요약, render_문제워크북 } from '../utils/templateRenderer.js';
+import { renderAllTypes, render_단어테스트, render_워크북_어법선택, render_워크북_어법수정, render_워크북_어휘선택, render_워크북_순서배열, render_워크북_삽입, render_워크북_빈칸단어, render_워크북_빈칸문장, render_워크북_요약, render_문제워크북, render_분석서 } from '../utils/templateRenderer.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -125,6 +125,33 @@ ${passage}
       {"num": 5, "A": "단어A5", "B": "단어B5"}
     ],
     "answer": 1
+  },
+  "type_분석서": {
+    "summary": {
+      "korean_summary": "지문 핵심 내용을 2-3줄로 한글 요약",
+      "english_topic": "핵심 요지를 나타내는 영어 문장 (원문에서 발췌 또는 재구성)",
+      "english_title": "지문의 영어 제목"
+    },
+    "sentences": [
+      {
+        "num": 1,
+        "badges": [],
+        "tags": [
+          {"num": 1, "text": "구문 포인트 설명 (예: There+완료시제: '~이 있어왔다')"},
+          {"num": 2, "text": "구문 포인트 설명2"}
+        ],
+        "chunked_english": "①There has been / a lot of **discussion** / on / ②why moths **are attracted** to **light**.",
+        "chunked_korean": "있어 왔다 / 많은 논의가 / 나방이 빛에 끌리는 이유에 대한.",
+        "words": [
+          {"word": "discussion", "meaning_ko": "논의", "synonyms": ["debate", "conversation"], "antonyms": ["agreement", "silence"]},
+          {"word": "attracted", "meaning_ko": "끌리다", "synonyms": ["drawn", "appealed"], "antonyms": ["repelled", "deterred"]}
+        ],
+        "grammar_points": [
+          "be attracted to: 수동태 표현이에요! attract는 '끌다'라는 타동사인데, 나방이 빛에 '끌리는' 것이므로 수동태를 써야 해요",
+          "간접의문문 어순: 'why moths are'처럼 의문사 다음에 주어+동사 순서! 'why are moths'가 아니에요"
+        ]
+      }
+    ]
   }
 }
 
@@ -175,6 +202,12 @@ ${passage}
 11. **요약**: 지문 전체를 한 문장 영어 요약. (A)와 (B) 두 빈칸.
     - choices의 정답 번호는 answer 필드에 (1-5 정수)
     - 오답들은 그럴듯해 보이지만 의미상 맞지 않는 단어 쌍
+12. **분석서**: 지문의 모든 문장에 대해 구문 분석을 작성하세요.
+   - tags: 각 문장에서 2-3개의 핵심 구문 포인트를 태그로 작성 (번호는 chunked_english의 ① ②와 대응)
+   - badges: 서술형 출제 가능성 높은 문장은 ["서술형 출제 가능"], 빈칸 문제로 자주 출제될 문장은 ["빈칸"], 없으면 []
+   - chunked_english: 슬래시(/)로 문장을 의미 단위로 청킹. ①②는 태그 번호와 대응하는 핵심 구문 앞에 붙임. **word**는 핵심 어휘를 bold로 표시
+   - words: 문장에서 고2~3 수준 핵심 단어만 (동의어/반의어 포함, 없으면 빈배열)
+   - grammar_points: 해당 문장의 어법 포인트를 1~3개 구체적으로 설명 (학생에게 설명하듯 친절하게)
 
 JSON만 출력하세요.`;
 
@@ -325,6 +358,21 @@ Visual layout rules (MANDATORY):
           allResults[`워크북_문제_passage${i}`] = {
             type: '워크북_문제',
             title: '문제 워크북',
+            content,
+            passageNum: i
+          };
+        }
+      }
+    }
+
+    // 분석서: 지문별로 1문서
+    if (!selectedTypes || selectedTypes.분석서) {
+      for (let i = 0; i < allPassagesData.length; i++) {
+        const content = render_분석서(allPassagesData[i], pageTitle);
+        if (content) {
+          allResults[`분석서_passage${i}`] = {
+            type: '분석서',
+            title: '분석서',
             content,
             passageNum: i
           };
