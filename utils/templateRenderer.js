@@ -162,10 +162,10 @@ export function render03_문장해석(data, pageTitle = '') {
   .page-header { border-bottom:2px solid #5B8A00; padding-bottom:6px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; }
   .page-header .sub { font-size:9px; color:#5B8A00; font-weight:600; letter-spacing:.5px; }
   .page-header .academy { font-size:9px; color:#888; }
-  .section-title { font-size:10px; font-weight:700; color:#1a1a1a; margin-bottom:2px; }
+  .section-title { background:#F2F8E0; border-left:3px solid #5B8A00; padding:8px 12px; margin-bottom:12px; border-radius:0 4px 4px 0; }
   .section-title .code { color:#5B8A00; margin-right:6px; }
-  .section-title .korean { font-weight:700; }
-  .section-title .english { font-weight:400; color:#555; font-style:italic; }
+  .section-title .korean { font-weight:700; font-size:13px; color:#1E293B; display:block; margin-bottom:2px; }
+  .section-title .english { font-weight:400; color:#888; font-style:italic; font-size:10px; display:block; }
 
   /* 문장 행 */
   .sentence-row { display:grid; grid-template-columns:28px 3fr 2fr; gap:0 12px; padding:18px 0; border-bottom:1px solid #F0F0F0; align-items:start; break-inside:avoid; }
@@ -193,9 +193,9 @@ export function render03_문장해석(data, pageTitle = '') {
     <div class="sub">${pageTitle}  -  문장해석</div>
     <div class="academy">평택 베리타스학원</div>
   </div>
-  <div style="margin-bottom:8px;">
-    <div class="section-title"><span class="korean">${passage.korean_title}</span></div>
-    <div class="section-title"><span class="english">(${passage.english_title})</span></div>
+  <div class="section-title">
+    <span class="korean">${passage.korean_title}</span>
+    <span class="english">${passage.english_title}</span>
   </div>
 
   ${sentenceRows}
@@ -671,7 +671,7 @@ export function render09_한줄해석(data, pageTitle = '') {
   .num { color:#5B8A00; font-weight:700; font-size:11px !important; flex-shrink:0; min-width:22px; }
   .eng { color:#111827; font-weight:600; font-size:11px !important; flex:1; line-height:1.6; }
   .write-area { display:flex; flex-direction:column; justify-content:space-evenly; min-height:72px; margin:6px 14px 10px 14px; gap:0; }
-  .write-line { border-bottom:1.5px solid #DDD; flex:1; min-height:22px; }
+  .write-line { flex:1; min-height:22px; }
 
   @media print { body { width:100% !important; margin:0 !important; padding:0 !important; } .item { break-inside:avoid; } }
 </style>
