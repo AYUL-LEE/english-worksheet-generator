@@ -16,7 +16,6 @@ export default async function handler(req, res) {
 
   let browser;
   const timestamp = Date.now();
-  const tmpHtmlPath = path.join(os.tmpdir(), `worksheet_${timestamp}.html`);
   const tmpPdfPath = path.join(os.tmpdir(), `worksheet_${timestamp}.pdf`);
 
   try {
@@ -44,10 +43,11 @@ export default async function handler(req, res) {
     page.setDefaultNavigationTimeout(180000);
     page.setDefaultTimeout(180000);
 
-    // 대용량 HTML(base64 이미지 포함)은 임시 파일로 저장 후 file:// 로드
-    // → setContent()보다 안정적이고 Google Fonts 타임아웃 없음
-    fs.writeFileSync(tmpHtmlPath, htmlContent, 'utf8');
-    await page.goto(`file:///${tmpHtmlPath.replace(/\\/g, '/')}`, {
+    // Google Fonts 링크 제거 → 외부 네트워크 의존성 차단 (타임아웃 방지)
+    const cleanedHTML = htmlContent.replace(
+      /<link[^>]*fonts\.googleapis\.com[^>]*>/gi, ''
+    );
+    await page.setContent(cleanedHTML, {
       waitUntil: 'domcontentloaded',
       timeout: 180000,
     });
@@ -76,7 +76,6 @@ export default async function handler(req, res) {
     if (browser) {
       try { await browser.close(); } catch (_) {}
     }
-    try { if (fs.existsSync(tmpHtmlPath)) fs.unlinkSync(tmpHtmlPath); } catch (_) {}
     try { if (fs.existsSync(tmpPdfPath)) fs.unlinkSync(tmpPdfPath); } catch (_) {}
     res.status(500).json({ error: err.message });
   }
