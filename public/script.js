@@ -394,31 +394,37 @@ function generatePreviewHTML(results, passageCount, selectedTypes) {
   return html;
 }
 
+function printHTML(html) {
+    // iframe을 현재 페이지에 숨겨서 삽입 - 팝업 차단 없이 인쇄
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;border:none;opacity:0;';
+    document.body.appendChild(iframe);
+    iframe.contentDocument.open();
+    iframe.contentDocument.write(html);
+    iframe.contentDocument.close();
+    iframe.onload = () => {
+        try {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+        } catch(e) {}
+        setTimeout(() => document.body.removeChild(iframe), 2000);
+    };
+    // fallback
+    setTimeout(() => {
+        try {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+        } catch(e) {}
+        setTimeout(() => { try { document.body.removeChild(iframe); } catch(e) {} }, 2000);
+    }, 1000);
+}
+
 async function downloadPDF() {
     if (!generatedHTML) {
         alert('먼저 학습지를 생성해주세요.');
         return;
     }
-    // 브라우저 인쇄 기능으로 PDF 저장 (서버 불필요, 이미지 완벽 출력)
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-        alert('팝업이 차단되었습니다.\n브라우저 주소창 오른쪽의 팝업 차단 아이콘을 클릭하여 허용해주세요.');
-        return;
-    }
-    printWindow.document.open();
-    printWindow.document.write(generatedHTML);
-    printWindow.document.close();
-    // onload가 이미 완료됐을 수 있으므로 setTimeout으로 fallback
-    const triggerPrint = () => {
-        printWindow.focus();
-        printWindow.print();
-    };
-    if (printWindow.document.readyState === 'complete') {
-        triggerPrint();
-    } else {
-        printWindow.onload = triggerPrint;
-        setTimeout(triggerPrint, 1500);
-    }
+    printHTML(generatedHTML);
 }
 
 // 샘플 PDF 다운로드 (AI 없이, 서버 목업 데이터 사용 → 브라우저 인쇄로 저장)
@@ -433,21 +439,7 @@ async function downloadSamplePDF() {
             throw new Error('서버 오류: ' + text.slice(0, 200));
         }
         const html = await response.text();
-        const printWindow = window.open('', '_blank');
-        if (!printWindow) {
-            alert('팝업이 차단되었습니다. 브라우저에서 팝업을 허용해주세요.');
-            return;
-        }
-        printWindow.document.open();
-        printWindow.document.write(html);
-        printWindow.document.close();
-        const triggerPrint = () => { printWindow.focus(); printWindow.print(); };
-        if (printWindow.document.readyState === 'complete') {
-            triggerPrint();
-        } else {
-            printWindow.onload = triggerPrint;
-            setTimeout(triggerPrint, 1500);
-        }
+        printHTML(html);
     } catch (error) {
         alert('샘플 PDF 오류: ' + error.message);
     } finally {
