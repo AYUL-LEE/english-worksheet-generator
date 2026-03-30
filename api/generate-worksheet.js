@@ -311,7 +311,7 @@ JSON만 출력하세요.`;
                 model: 'dall-e-3',
                 prompt,
                 n: 1,
-                size: '1024x1024',
+                size: '1792x1024',
                 quality: 'standard',
               });
               const tempUrl = resp.data[0].url;

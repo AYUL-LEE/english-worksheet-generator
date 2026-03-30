@@ -66,7 +66,7 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   @page { size: A4; margin: 10mm; }
-  * { margin:0; padding:0; box-sizing:border-box; font-size:11px !important; }
+  * { margin:0; padding:0; box-sizing:border-box; font-size:12px !important; }
   body { font-family:'Inter','Noto Sans KR',sans-serif; width:210mm; min-height:297mm; margin:0 auto; padding:10mm; background:#ffffff; line-height:1.3; }
 
   .page-header { border-bottom:2px solid #5B8A00; padding-bottom:5px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
@@ -77,7 +77,7 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
   .title-korean { font-size:12px !important; font-weight:700; color:#1E293B; margin-bottom:2px; }
   .title-english { font-size:9.5px !important; color:#888; font-style:italic; }
 
-  .text-content { line-height:2.0; color:#374151; padding:8px 10px; background:#FEFEFE; border-radius:4px; font-weight:600; word-break:keep-all; margin-bottom:8px; font-size:11.5px !important; }
+  .text-content { line-height:2.0; color:#374151; padding:8px 10px; background:#FEFEFE; border-radius:4px; font-weight:600; word-break:keep-all; margin-bottom:8px; font-size:13px !important; }
   .sent-num { color:#5B8A00; font-weight:700; }
 
   .flow-section { margin-bottom:8px; }
@@ -93,7 +93,7 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
   /* 4컷 만화 - 별도 페이지 */
   .comic-page { page-break-before:always; padding-top:8mm; }
   .comic-section-title { font-size:9.5px !important; font-weight:700; color:#fff; background:#5B8A00; padding:3px 8px; margin-bottom:6px; border-radius:3px; letter-spacing:0.5px; }
-  .comic-grid { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:120mm 120mm; gap:3px; width:100%; border:2px solid #1a1a1a; border-radius:4px; overflow:hidden; background:#1a1a1a; }
+  .comic-grid { display:grid; grid-template-columns:1fr; grid-template-rows:repeat(4, 70mm); gap:3px; width:100%; border:2px solid #1a1a1a; border-radius:4px; overflow:hidden; background:#1a1a1a; }
   .comic-panel { position:relative; overflow:hidden; background:#f5f5f5; }
   .panel-img { width:100%; height:100%; object-fit:cover; display:block; }
   .panel-placeholder { width:100%; height:100%; background:#e8e8e8; }
@@ -193,7 +193,7 @@ export function render03_문장해석(data, pageTitle = '') {
   .sentence-row { display:grid; grid-template-columns:28px 3fr 2fr; gap:0 12px; padding:26px 0; border-bottom:1px solid #F0F0F0; align-items:start; break-inside:avoid; }
   .sentence-row:last-of-type { border-bottom:none; }
   .num { font-size:11px; font-weight:700; color:#5B8A00; padding-top:1px; white-space:nowrap; }
-  .english-text { font-size:12.5px; line-height:1.85; font-weight:500; color:#111; word-break:keep-all; text-align:justify; }
+  .english-text { font-size:14px; line-height:1.85; font-weight:500; color:#111; word-break:keep-all; text-align:justify; }
   .korean-text { font-size:10.5px; line-height:1.65; color:#444; word-break:keep-all; }
 
   /* WORDS & PHRASES */
@@ -255,7 +255,7 @@ export function render04_문장분석(data) {
   
   .sentence-number { background:#1E40AF; color:#fff; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:10px !important; flex-shrink:0; margin-top:2px; }
   
-  .english-text { font-size:11px !important; line-height:1.7; font-weight:500; }
+  .english-text { font-size:13px !important; line-height:1.7; font-weight:500; }
   .korean-text { font-size:9px !important; line-height:1.6; font-weight:500; }
   
   .g { color:#d90429; font-weight:800; }
