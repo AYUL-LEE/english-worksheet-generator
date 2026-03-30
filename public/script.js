@@ -401,12 +401,20 @@ async function downloadPDF() {
     }
     // 브라우저 인쇄 기능으로 PDF 저장 (서버 불필요, 이미지 완벽 출력)
     const printWindow = window.open('', '_blank');
+    printWindow.document.open();
     printWindow.document.write(generatedHTML);
     printWindow.document.close();
-    printWindow.onload = () => {
+    // onload가 이미 완료됐을 수 있으므로 setTimeout으로 fallback
+    const triggerPrint = () => {
         printWindow.focus();
         printWindow.print();
     };
+    if (printWindow.document.readyState === 'complete') {
+        triggerPrint();
+    } else {
+        printWindow.onload = triggerPrint;
+        setTimeout(triggerPrint, 1500);
+    }
 }
 
 // 샘플 PDF 다운로드 (AI 없이, 서버 목업 데이터 사용)
