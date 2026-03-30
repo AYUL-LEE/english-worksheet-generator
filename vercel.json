@@ -7,5 +7,9 @@
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/$1.js" },
     { "src": "/(.*)", "dest": "/public/$1" }
-  ]
+  ],
+  "functions": {
+    "api/generate-pdf.js": { "maxDuration": 60 },
+    "api/generate-worksheet.js": { "maxDuration": 60 }
+  }
 }

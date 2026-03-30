@@ -90,11 +90,11 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
   .flow-title { font-weight:700; color:#1E293B; margin-bottom:2px; font-size:10.5px !important; }
   .flow-desc { color:#475569; line-height:1.4; font-size:10px !important; }
 
-  /* 4컷 만화 */
+  /* 4컷 만화 - 별도 페이지 */
+  .comic-page { page-break-before:always; padding-top:8mm; }
   .comic-section-title { font-size:9.5px !important; font-weight:700; color:#fff; background:#5B8A00; padding:3px 8px; margin-bottom:6px; border-radius:3px; letter-spacing:0.5px; }
-  .comic-wrapper { width:100%; }
-  .comic-grid { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:39mm 39mm; gap:2px; width:100%; height:78mm; border:2px solid #1a1a1a; border-radius:4px; overflow:hidden; background:#1a1a1a; }
-  .comic-panel { position:relative; overflow:hidden; background:#f5f5f5; height:100%; }
+  .comic-grid { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:120mm 120mm; gap:3px; width:100%; border:2px solid #1a1a1a; border-radius:4px; overflow:hidden; background:#1a1a1a; }
+  .comic-panel { position:relative; overflow:hidden; background:#f5f5f5; }
   .panel-img { width:100%; height:100%; object-fit:cover; display:block; }
   .panel-placeholder { width:100%; height:100%; background:#e8e8e8; }
   .panel-num { position:absolute; top:5px; left:5px; background:#5B8A00; color:#fff; width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:8px !important; font-weight:700; z-index:10; }
@@ -122,10 +122,11 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
     <div class="flow-box">${logicalFlowHTML}</div>
   </div>
 
-  <div class="comic-wrapper">
+  ${comicGridHTML ? `
+  <div class="comic-page">
     <div class="comic-section-title">[ 4컷 만화 ]</div>
     ${comicGridHTML}
-  </div>
+  </div>` : ''}
 </body>
 </html>
   `;
