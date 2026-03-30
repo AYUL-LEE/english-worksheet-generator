@@ -67,7 +67,7 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
 <style>
   @page { size: A4; margin: 10mm; }
   * { margin:0; padding:0; box-sizing:border-box; font-size:11px !important; }
-  body { font-family:'Inter','Noto Sans KR',sans-serif; width:210mm; height:297mm; margin:0 auto; padding:10mm; background:#ffffff; line-height:1.3; overflow:hidden; display:flex; flex-direction:column; }
+  body { font-family:'Inter','Noto Sans KR',sans-serif; width:210mm; min-height:297mm; margin:0 auto; padding:10mm; background:#ffffff; line-height:1.3; }
 
   .page-header { border-bottom:2px solid #5B8A00; padding-bottom:5px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
   .page-header .sub { font-size:9px; color:#5B8A00; font-weight:600; letter-spacing:.5px; }
@@ -90,11 +90,11 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
   .flow-title { font-weight:700; color:#1E293B; margin-bottom:2px; font-size:10.5px !important; }
   .flow-desc { color:#475569; line-height:1.4; font-size:10px !important; }
 
-  /* 4컷 만화 - 고정 높이로 전체 너비 */
+  /* 4컷 만화 */
   .comic-section-title { font-size:9.5px !important; font-weight:700; color:#fff; background:#5B8A00; padding:3px 8px; margin-bottom:6px; border-radius:3px; letter-spacing:0.5px; }
-  .comic-wrapper { flex:1; display:flex; flex-direction:column; min-height:0; }
-  .comic-grid { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:2px; width:100%; flex:1; border:2px solid #1a1a1a; border-radius:4px; overflow:hidden; background:#1a1a1a; }
-  .comic-panel { position:relative; overflow:hidden; background:#f5f5f5; }
+  .comic-wrapper { width:100%; }
+  .comic-grid { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:39mm 39mm; gap:2px; width:100%; height:78mm; border:2px solid #1a1a1a; border-radius:4px; overflow:hidden; background:#1a1a1a; }
+  .comic-panel { position:relative; overflow:hidden; background:#f5f5f5; height:100%; }
   .panel-img { width:100%; height:100%; object-fit:cover; display:block; }
   .panel-placeholder { width:100%; height:100%; background:#e8e8e8; }
   .panel-num { position:absolute; top:5px; left:5px; background:#5B8A00; color:#fff; width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:8px !important; font-weight:700; z-index:10; }
