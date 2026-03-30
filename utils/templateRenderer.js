@@ -67,7 +67,7 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
 <style>
   @page { size: A4; margin: 10mm; }
   * { margin:0; padding:0; box-sizing:border-box; font-size:11px !important; }
-  body { font-family:'Inter','Noto Sans KR',sans-serif; width:210mm; height:297mm; margin:0 auto; padding:10mm; background:#ffffff; line-height:1.3; overflow:hidden; }
+  body { font-family:'Inter','Noto Sans KR',sans-serif; width:210mm; height:297mm; margin:0 auto; padding:10mm; background:#ffffff; line-height:1.3; overflow:hidden; display:flex; flex-direction:column; }
 
   .page-header { border-bottom:2px solid #5B8A00; padding-bottom:5px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
   .page-header .sub { font-size:9px; color:#5B8A00; font-weight:600; letter-spacing:.5px; }
@@ -80,9 +80,7 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
   .text-content { line-height:2.0; color:#374151; padding:8px 10px; background:#FEFEFE; border-radius:4px; font-weight:600; word-break:keep-all; margin-bottom:8px; font-size:11.5px !important; }
   .sent-num { color:#5B8A00; font-weight:700; }
 
-  /* 하단: 논리흐름 + 4컷 좌우 배치 */
-  .bottom-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:start; }
-
+  .flow-section { margin-bottom:8px; }
   .flow-section-title { font-size:9.5px !important; font-weight:700; color:#fff; background:#5B8A00; padding:3px 8px; margin-bottom:6px; border-radius:3px; letter-spacing:0.5px; }
   .flow-box { background:#F2F8E0; border:1px solid #C8E6A0; border-radius:4px; padding:8px 10px; }
   .flow-item { display:flex; gap:8px; align-items:flex-start; padding:5px 0; border-bottom:1px solid #E8F5D0; }
@@ -92,10 +90,11 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
   .flow-title { font-weight:700; color:#1E293B; margin-bottom:2px; font-size:10.5px !important; }
   .flow-desc { color:#475569; line-height:1.4; font-size:10px !important; }
 
-  /* 4컷 만화 (우측 컬럼) */
+  /* 4컷 만화 - 고정 높이로 전체 너비 */
   .comic-section-title { font-size:9.5px !important; font-weight:700; color:#fff; background:#5B8A00; padding:3px 8px; margin-bottom:6px; border-radius:3px; letter-spacing:0.5px; }
-  .comic-grid { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:2px; width:100%; border:2px solid #1a1a1a; border-radius:4px; overflow:hidden; background:#1a1a1a; }
-  .comic-panel { position:relative; aspect-ratio:1; overflow:hidden; background:#f5f5f5; }
+  .comic-wrapper { flex:1; display:flex; flex-direction:column; min-height:0; }
+  .comic-grid { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:2px; width:100%; flex:1; border:2px solid #1a1a1a; border-radius:4px; overflow:hidden; background:#1a1a1a; }
+  .comic-panel { position:relative; overflow:hidden; background:#f5f5f5; }
   .panel-img { width:100%; height:100%; object-fit:cover; display:block; }
   .panel-placeholder { width:100%; height:100%; background:#e8e8e8; }
   .panel-num { position:absolute; top:5px; left:5px; background:#5B8A00; color:#fff; width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:8px !important; font-weight:700; z-index:10; }
@@ -118,15 +117,14 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
 
   <div class="text-content">${numberedText}</div>
 
-  <div class="bottom-row">
-    <div class="flow-col">
-      <div class="flow-section-title">[ 지문흐름 이해 ]</div>
-      <div class="flow-box">${logicalFlowHTML}</div>
-    </div>
-    <div class="comic-col">
-      <div class="comic-section-title">[ 4컷 만화 ]</div>
-      ${comicGridHTML}
-    </div>
+  <div class="flow-section">
+    <div class="flow-section-title">[ 지문흐름 이해 ]</div>
+    <div class="flow-box">${logicalFlowHTML}</div>
+  </div>
+
+  <div class="comic-wrapper">
+    <div class="comic-section-title">[ 4컷 만화 ]</div>
+    ${comicGridHTML}
   </div>
 </body>
 </html>
