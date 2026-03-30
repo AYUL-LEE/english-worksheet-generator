@@ -46,7 +46,7 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
 
   // 4컷 웹툰 섹션 - 개별 패널 + CSS 말풍선
   const validPanels = (Array.isArray(panelImages) ? panelImages : []).slice(0, 4);
-  const webtoonSection = validPanels.length > 0 ? `
+  const comicGridHTML = validPanels.length > 0 ? `
   <div class="comic-grid">
     ${validPanels.map((p, i) => `
     <div class="comic-panel">
@@ -65,41 +65,43 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
 <title>본문노트 - ${passage.korean_title}</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-  @page { size: A4; margin: 12mm; }
+  @page { size: A4; margin: 10mm; }
   * { margin:0; padding:0; box-sizing:border-box; font-size:11px !important; }
-  body { font-family:'Inter','Noto Sans KR',sans-serif; width:210mm; min-height:297mm; margin:0 auto; padding:12mm; background:#ffffff; line-height:1.3; }
+  body { font-family:'Inter','Noto Sans KR',sans-serif; width:210mm; height:297mm; margin:0 auto; padding:10mm; background:#ffffff; line-height:1.3; overflow:hidden; }
 
-  .page-header { border-bottom:2px solid #5B8A00; padding-bottom:6px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; }
+  .page-header { border-bottom:2px solid #5B8A00; padding-bottom:5px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
   .page-header .sub { font-size:9px; color:#5B8A00; font-weight:600; letter-spacing:.5px; }
   .page-header .academy { font-size:9px; color:#888; }
 
-  .title-section { background:#F2F8E0; border-left:3px solid #5B8A00; padding:8px 12px; margin-bottom:12px; border-radius:0 4px 4px 0; }
-  .title-korean { font-size:13px !important; font-weight:700; color:#1E293B; margin-bottom:3px; }
-  .title-english { font-size:10px !important; color:#888; font-style:italic; }
+  .title-section { background:#F2F8E0; border-left:3px solid #5B8A00; padding:6px 10px; margin-bottom:8px; border-radius:0 4px 4px 0; }
+  .title-korean { font-size:12px !important; font-weight:700; color:#1E293B; margin-bottom:2px; }
+  .title-english { font-size:9.5px !important; color:#888; font-style:italic; }
 
-  .text-content { line-height:2.3; color:#374151; padding:12px; background:#FEFEFE; border-radius:4px; font-weight:600; word-break:keep-all; margin-bottom:12px; font-size:12px !important; }
+  .text-content { line-height:2.0; color:#374151; padding:8px 10px; background:#FEFEFE; border-radius:4px; font-weight:600; word-break:keep-all; margin-bottom:8px; font-size:11.5px !important; }
   .sent-num { color:#5B8A00; font-weight:700; }
-  .flow-section { margin-bottom:20px; }
-  .flow-section-title { font-size:10px !important; font-weight:700; color:#fff; background:#5B8A00; padding:4px 10px; margin-bottom:8px; border-radius:3px; letter-spacing:0.5px; }
-  .flow-box { background:#F2F8E0; border:1px solid #C8E6A0; border-radius:4px; padding:10px 12px; }
 
-  /* 논리흐름 */
-  .flow-item { display:flex; gap:10px; align-items:flex-start; padding:8px 0; border-bottom:1px solid #E8F5D0; }
+  /* 하단: 논리흐름 + 4컷 좌우 배치 */
+  .bottom-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:start; }
+
+  .flow-section-title { font-size:9.5px !important; font-weight:700; color:#fff; background:#5B8A00; padding:3px 8px; margin-bottom:6px; border-radius:3px; letter-spacing:0.5px; }
+  .flow-box { background:#F2F8E0; border:1px solid #C8E6A0; border-radius:4px; padding:8px 10px; }
+  .flow-item { display:flex; gap:8px; align-items:flex-start; padding:5px 0; border-bottom:1px solid #E8F5D0; }
   .flow-item:last-child { border-bottom:none; }
-  .flow-num { font-weight:700; color:#5B8A00; font-size:13px !important; flex-shrink:0; margin-top:1px; min-width:20px; }
+  .flow-num { font-weight:700; color:#5B8A00; font-size:12px !important; flex-shrink:0; margin-top:1px; min-width:16px; }
   .flow-body { flex:1; }
-  .flow-title { font-weight:700; color:#1E293B; margin-bottom:3px; font-size:11px !important; }
-  .flow-desc { color:#475569; line-height:1.5; }
+  .flow-title { font-weight:700; color:#1E293B; margin-bottom:2px; font-size:10.5px !important; }
+  .flow-desc { color:#475569; line-height:1.4; font-size:10px !important; }
 
-  /* 4컷 만화 그리드 */
-  .comic-grid { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:3px; width:100%; border:2px solid #1a1a1a; border-radius:4px; overflow:hidden; background:#1a1a1a; margin-top:4px; }
+  /* 4컷 만화 (우측 컬럼) */
+  .comic-section-title { font-size:9.5px !important; font-weight:700; color:#fff; background:#5B8A00; padding:3px 8px; margin-bottom:6px; border-radius:3px; letter-spacing:0.5px; }
+  .comic-grid { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:2px; width:100%; border:2px solid #1a1a1a; border-radius:4px; overflow:hidden; background:#1a1a1a; }
   .comic-panel { position:relative; aspect-ratio:1; overflow:hidden; background:#f5f5f5; }
   .panel-img { width:100%; height:100%; object-fit:cover; display:block; }
   .panel-placeholder { width:100%; height:100%; background:#e8e8e8; }
-  .panel-num { position:absolute; top:6px; left:6px; background:#5B8A00; color:#fff; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px !important; font-weight:700; z-index:10; }
-  .speech-bubble { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); background:#fff; border:2px solid #1a1a1a; border-radius:10px; padding:3px 8px; font-size:8.5px !important; font-weight:600; white-space:normal; max-width:88%; text-align:center; z-index:10; line-height:1.3; }
-  .speech-bubble::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:#1a1a1a; }
-  .speech-bubble::before { content:''; position:absolute; top:calc(100% - 2px); left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:#fff; z-index:1; }
+  .panel-num { position:absolute; top:5px; left:5px; background:#5B8A00; color:#fff; width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:8px !important; font-weight:700; z-index:10; }
+  .speech-bubble { position:absolute; bottom:8px; left:50%; transform:translateX(-50%); background:#fff; border:1.5px solid #1a1a1a; border-radius:8px; padding:2px 6px; font-size:7.5px !important; font-weight:600; white-space:normal; max-width:90%; text-align:center; z-index:10; line-height:1.2; }
+  .speech-bubble::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:4px solid transparent; border-top-color:#1a1a1a; }
+  .speech-bubble::before { content:''; position:absolute; top:calc(100% - 1.5px); left:50%; transform:translateX(-50%); border:4px solid transparent; border-top-color:#fff; z-index:1; }
   @media print { body { width:100% !important; margin:0 !important; padding:0 !important; } }
 </style>
 </head>
@@ -116,14 +118,16 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
 
   <div class="text-content">${numberedText}</div>
 
-  <div class="flow-section">
-    <div class="flow-section-title">[ 지문흐름 이해 ]</div>
-    <div class="flow-box">
-      ${logicalFlowHTML}
+  <div class="bottom-row">
+    <div class="flow-col">
+      <div class="flow-section-title">[ 지문흐름 이해 ]</div>
+      <div class="flow-box">${logicalFlowHTML}</div>
+    </div>
+    <div class="comic-col">
+      <div class="comic-section-title">[ 4컷 만화 ]</div>
+      ${comicGridHTML}
     </div>
   </div>
-
-  ${webtoonSection}
 </body>
 </html>
   `;
