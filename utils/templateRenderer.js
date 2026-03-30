@@ -90,10 +90,10 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
   .flow-title { font-weight:700; color:#1E293B; margin-bottom:2px; font-size:10.5px !important; }
   .flow-desc { color:#475569; line-height:1.4; font-size:10px !important; }
 
-  /* 4컷 만화 - 별도 페이지 */
-  .comic-page { page-break-before:always; padding-top:8mm; }
-  .comic-section-title { font-size:9.5px !important; font-weight:700; color:#fff; background:#5B8A00; padding:3px 8px; margin-bottom:6px; border-radius:3px; letter-spacing:0.5px; }
-  .comic-grid { display:grid; grid-template-columns:1fr; grid-template-rows:repeat(4, 70mm); gap:3px; width:100%; border:2px solid #1a1a1a; border-radius:4px; overflow:hidden; background:#1a1a1a; }
+  /* 4컷 만화 - 같은 페이지 */
+  .comic-page { margin-top:6px; }
+  .comic-section-title { font-size:9.5px !important; font-weight:700; color:#fff; background:#5B8A00; padding:3px 8px; margin-bottom:4px; border-radius:3px; letter-spacing:0.5px; }
+  .comic-grid { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:48mm 48mm; gap:2px; width:100%; border:2px solid #1a1a1a; border-radius:4px; overflow:hidden; background:#1a1a1a; }
   .comic-panel { position:relative; overflow:hidden; background:#f5f5f5; }
   .panel-img { width:100%; height:100%; object-fit:cover; display:block; }
   .panel-placeholder { width:100%; height:100%; background:#e8e8e8; }
@@ -190,10 +190,10 @@ export function render03_문장해석(data, pageTitle = '') {
   .section-title .english { font-weight:400; color:#888; font-style:italic; font-size:10px; display:block; }
 
   /* 문장 행 */
-  .sentence-row { display:grid; grid-template-columns:28px 3fr 2fr; gap:0 12px; padding:26px 0; border-bottom:1px solid #F0F0F0; align-items:start; break-inside:avoid; }
+  .sentence-row { display:grid; grid-template-columns:28px 3fr 2fr; gap:0 12px; padding:4px 0 40px 0; border-bottom:1px solid #F0F0F0; align-items:start; break-inside:avoid; }
   .sentence-row:last-of-type { border-bottom:none; }
   .num { font-size:11px; font-weight:700; color:#5B8A00; padding-top:1px; white-space:nowrap; }
-  .english-text { font-size:14px; line-height:1.85; font-weight:500; color:#111; word-break:keep-all; text-align:justify; }
+  .english-text { font-size:13px; line-height:1.85; font-weight:500; color:#111; word-break:keep-all; text-align:justify; }
   .korean-text { font-size:10.5px; line-height:1.65; color:#444; word-break:keep-all; }
 
   /* WORDS & PHRASES */
@@ -691,7 +691,7 @@ export function render09_한줄해석(data, pageTitle = '') {
   .item { border:1px solid #D0E8A0; border-radius:6px; overflow:hidden; margin-bottom:10px; display:flex; flex-direction:column; break-inside:avoid; }
   .item-head { display:flex; align-items:flex-start; gap:8px; padding:8px 12px; background:#F2F8E0; border-bottom:1px dashed #C8E090; }
   .num { color:#5B8A00; font-weight:700; font-size:11px !important; flex-shrink:0; min-width:22px; }
-  .eng { color:#111827; font-weight:600; font-size:11px !important; flex:1; line-height:1.6; }
+  .eng { color:#111827; font-weight:600; font-size:13px !important; flex:1; line-height:1.6; }
   .write-area { display:flex; flex-direction:column; justify-content:space-evenly; min-height:48px; margin:6px 14px 10px 14px; gap:0; }
   .write-line { flex:1; min-height:22px; }
 

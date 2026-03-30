@@ -395,28 +395,24 @@ function generatePreviewHTML(results, passageCount, selectedTypes) {
 }
 
 function printHTML(html) {
-    // iframe을 현재 페이지에 숨겨서 삽입 - 팝업 차단 없이 인쇄
     const iframe = document.createElement('iframe');
     iframe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;border:none;opacity:0;';
     document.body.appendChild(iframe);
     iframe.contentDocument.open();
     iframe.contentDocument.write(html);
     iframe.contentDocument.close();
-    iframe.onload = () => {
+    let printed = false;
+    const doPrint = () => {
+        if (printed) return;
+        printed = true;
         try {
             iframe.contentWindow.focus();
             iframe.contentWindow.print();
         } catch(e) {}
-        setTimeout(() => document.body.removeChild(iframe), 2000);
+        setTimeout(() => { try { document.body.removeChild(iframe); } catch(e) {} }, 3000);
     };
-    // fallback
-    setTimeout(() => {
-        try {
-            iframe.contentWindow.focus();
-            iframe.contentWindow.print();
-        } catch(e) {}
-        setTimeout(() => { try { document.body.removeChild(iframe); } catch(e) {} }, 2000);
-    }, 1000);
+    iframe.onload = doPrint;
+    setTimeout(doPrint, 1200); // onload가 안 오면 fallback
 }
 
 async function downloadPDF() {
@@ -424,7 +420,18 @@ async function downloadPDF() {
         alert('먼저 학습지를 생성해주세요.');
         return;
     }
-    printHTML(generatedHTML);
+    // PDF 저장 시 제목 자동 설정 (브라우저가 document.title을 파일명으로 사용)
+    const korTitle = window.lastResult?.debug?.[0]?.rawJSON?.passage?.korean_title
+                  || window.lastResult?.results?.[0]?.passage?.korean_title
+                  || '';
+    const date = new Date().toISOString().slice(0,10);
+    const pdfTitle = korTitle ? `${korTitle}_${date}` : `영어학습지_${date}`;
+    const htmlWithTitle = generatedHTML.replace(/<title>[^<]*<\/title>/i, `<title>${pdfTitle}</title>`);
+    // Windows print dialog는 부모 페이지 title을 파일명으로 사용
+    const originalTitle = document.title;
+    document.title = pdfTitle;
+    printHTML(htmlWithTitle);
+    setTimeout(() => { document.title = originalTitle; }, 3000);
 }
 
 // 샘플 PDF 다운로드 (AI 없이, 서버 목업 데이터 사용 → 브라우저 인쇄로 저장)

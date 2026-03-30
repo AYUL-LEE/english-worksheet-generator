@@ -304,7 +304,7 @@ JSON만 출력하세요.`;
             const scene = typeof panel === 'string' ? panel : (panel.scene ?? panel);
             const dialogue = typeof panel === 'object' ? (panel.dialogue ?? '') : '';
 
-            const prompt = `A single cartoon panel in clean webtoon/manhwa style: ${scene}. Bold black outlines, flat bright colors. Absolutely NO text, NO speech bubbles, NO written words anywhere in the image. Square format, simple expressive cartoon characters. Fill entire canvas with the scene.`;
+            const prompt = `Webtoon comic panel, consistent art style across all panels: ${scene}. SAME character design throughout: a teenage student with short black hair, big round eyes, simple round face, wearing a white school uniform. Clean Korean webtoon style, bold black outlines, flat bright colors, no shading. Absolutely NO text, NO speech bubbles, NO written words. Fill entire canvas.`;
 
             try {
               const resp = await openai.images.generate({
@@ -315,7 +315,12 @@ JSON만 출력하세요.`;
                 quality: 'standard',
               });
               const tempUrl = resp.data[0].url;
-              return { url: tempUrl, dialogue };
+              // URL 만료 방지: base64로 즉시 변환
+              const imgResp = await fetch(tempUrl);
+              const buffer = await imgResp.arrayBuffer();
+              const base64 = Buffer.from(buffer).toString('base64');
+              const dataUrl = `data:image/png;base64,${base64}`;
+              return { url: dataUrl, dialogue };
             } catch (e) {
               console.error(`패널 ${idx + 1} 생성 실패:`, e.message);
               return { url: null, dialogue };
