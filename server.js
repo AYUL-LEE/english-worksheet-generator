@@ -9,7 +9,13 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json({ limit: '50mb' }));
-app.use(express.static('public'));
+app.use(express.static('public', {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.js') || path.endsWith('.css')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+  }
+}));
 
 // API 라우트
 app.post('/api/generate-worksheet', async (req, res) => {
