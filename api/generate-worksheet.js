@@ -45,10 +45,10 @@ ${passage}
       }
     ],
     "웹툰캡션": [
-      "Panel 1 scene description in English (what to draw, no text)",
-      "Panel 2 scene description in English (what to draw, no text)",
-      "Panel 3 scene description in English (what to draw, no text)",
-      "Panel 4 scene description in English (what to draw, no text)"
+      {"scene": "Panel 1 scene description in English (what to draw, no text, no written words)", "dialogue": "Short spoken line or caption for this panel (max 10 words, English)"},
+      {"scene": "Panel 2 scene description in English (what to draw, no text, no written words)", "dialogue": "Short spoken line or caption for this panel (max 10 words, English)"},
+      {"scene": "Panel 3 scene description in English (what to draw, no text, no written words)", "dialogue": "Short spoken line or caption for this panel (max 10 words, English)"},
+      {"scene": "Panel 4 scene description in English (what to draw, no text, no written words)", "dialogue": "Short spoken line or caption for this panel (max 10 words, English)"}
     ]
   },
   "type_03_문장해석": {
@@ -294,46 +294,41 @@ JSON만 출력하세요.`;
 
       console.log(`✅ 지문 ${i+1} 완료 - 토큰: ${completion.usage.total_tokens}`);
 
-      // DALL-E 3 4컷 웹툰 이미지 생성
-      let webtoonImageUrl = null;
+      // DALL-E 3 4컷 웹툰 이미지 - 패널별 개별 생성 (병렬)
+      let panelImages = [];
       try {
         const captions = jsonData.type_01_본문노트?.웹툰캡션 ?? [];
-        const panelDescriptions = captions.slice(0, 4).map((desc, idx) =>
-          `Panel ${idx + 1}: ${desc}`
-        ).join('\n');
 
-        const imagePrompt = `STRICT REQUIREMENT: Draw EXACTLY 4 panels and NO MORE. This image must be divided into a 2x2 grid with exactly 4 panels total — top-left (Panel 1), top-right (Panel 2), bottom-left (Panel 3), bottom-right (Panel 4). Do NOT draw 6 panels, do NOT draw 3 panels. Only 4 panels.
+        panelImages = await Promise.all(
+          captions.slice(0, 4).map(async (panel, idx) => {
+            const scene = typeof panel === 'string' ? panel : (panel.scene ?? panel);
+            const dialogue = typeof panel === 'object' ? (panel.dialogue ?? '') : '';
 
-This is a 4-panel webtoon/comic strip story about: "${jsonData.passage.english_title}".
+            const prompt = `A single cartoon panel in clean webtoon/manhwa style: ${scene}. Bold black outlines, flat bright colors. Absolutely NO text, NO speech bubbles, NO written words anywhere in the image. Square format, simple expressive cartoon characters. Fill entire canvas with the scene.`;
 
-${panelDescriptions}
-
-Visual layout rules (MANDATORY):
-- The entire image is split into EXACTLY 4 equal sections by two straight thick black lines: one horizontal line in the middle, one vertical line in the middle.
-- This creates exactly 4 rectangular panels: top-left, top-right, bottom-left, bottom-right.
-- Clean webtoon style with bold black outlines and flat bright colors
-- Simple cartoon characters (no specific ethnicity, religion, or cultural identity)
-- Each panel has a short English speech bubble or caption text
-- Consistent art style across all 4 panels
-- Fill entire canvas — no white borders or empty space outside panels`;
-
-        const imageResponse = await openai.images.generate({
-          model: 'dall-e-3',
-          prompt: imagePrompt,
-          n: 1,
-          size: '1792x1024',
-          quality: 'standard',
-        });
-        webtoonImageUrl = imageResponse.data[0].url;
-        console.log(`🎨 웹툰 이미지 생성 완료`);
+            try {
+              const resp = await openai.images.generate({
+                model: 'dall-e-3',
+                prompt,
+                n: 1,
+                size: '1024x1024',
+                quality: 'standard',
+              });
+              return { url: resp.data[0].url, dialogue };
+            } catch (e) {
+              console.error(`패널 ${idx + 1} 생성 실패:`, e.message);
+              return { url: null, dialogue };
+            }
+          })
+        );
+        console.log(`🎨 웹툰 패널 ${panelImages.filter(p => p.url).length}/4 생성 완료`);
       } catch (imgError) {
         console.error('이미지 생성 실패:', imgError.message);
-        // 이미지 실패해도 나머지 진행
       }
 
       // JSON → HTML 변환 (기본워크북 선택시에만)
       const htmlResults = (!selectedTypes || selectedTypes.기본워크북)
-        ? renderAllTypes(jsonData, webtoonImageUrl, pageTitle)
+        ? renderAllTypes(jsonData, panelImages, pageTitle)
         : {};
 
       // 결과 저장

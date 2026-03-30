@@ -23,7 +23,7 @@ function parseFixMarkup(text) {
 }
 
 // 01_본문노트.html
-export function render01_본문노트(data, webtoonImageUrl = null, pageTitle = '') {
+export function render01_본문노트(data, panelImages = [], pageTitle = '') {
   const { passage, type_01_본문노트, type_03_문장해석 } = data;
 
   const sentences = type_03_문장해석?.sentences ?? [];
@@ -44,10 +44,16 @@ export function render01_본문노트(data, webtoonImageUrl = null, pageTitle = 
       </div>
     </div>`).join('');
 
-  // 웹툰 이미지 섹션
-  const webtoonSection = webtoonImageUrl ? `
-  <div class="webtoon-wrapper">
-    <img src="${webtoonImageUrl}" alt="4컷 웹툰 요약" class="webtoon-img" />
+  // 4컷 웹툰 섹션 - 개별 패널 + CSS 말풍선
+  const validPanels = (Array.isArray(panelImages) ? panelImages : []).slice(0, 4);
+  const webtoonSection = validPanels.length > 0 ? `
+  <div class="comic-grid">
+    ${validPanels.map((p, i) => `
+    <div class="comic-panel">
+      ${p.url ? `<img src="${p.url}" alt="패널 ${i+1}" class="panel-img" />` : '<div class="panel-placeholder"></div>'}
+      <div class="panel-num">${i + 1}</div>
+      ${p.dialogue ? `<div class="speech-bubble">${p.dialogue}</div>` : ''}
+    </div>`).join('')}
   </div>` : '';
 
   return `
@@ -85,8 +91,15 @@ export function render01_본문노트(data, webtoonImageUrl = null, pageTitle = 
   .flow-title { font-weight:700; color:#1E293B; margin-bottom:3px; font-size:11px !important; }
   .flow-desc { color:#475569; line-height:1.5; }
 
-  .webtoon-wrapper { width:100%; margin-top:4px; background:transparent; }
-  .webtoon-img { width:100%; display:block; border-radius:4px; }
+  /* 4컷 만화 그리드 */
+  .comic-grid { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:3px; width:100%; border:2px solid #1a1a1a; border-radius:4px; overflow:hidden; background:#1a1a1a; margin-top:4px; }
+  .comic-panel { position:relative; aspect-ratio:1; overflow:hidden; background:#f5f5f5; }
+  .panel-img { width:100%; height:100%; object-fit:cover; display:block; }
+  .panel-placeholder { width:100%; height:100%; background:#e8e8e8; }
+  .panel-num { position:absolute; top:6px; left:6px; background:#5B8A00; color:#fff; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px !important; font-weight:700; z-index:10; }
+  .speech-bubble { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); background:#fff; border:2px solid #1a1a1a; border-radius:10px; padding:3px 8px; font-size:8.5px !important; font-weight:600; white-space:normal; max-width:88%; text-align:center; z-index:10; line-height:1.3; }
+  .speech-bubble::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:#1a1a1a; }
+  .speech-bubble::before { content:''; position:absolute; top:calc(100% - 2px); left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:#fff; z-index:1; }
   @media print { body { width:100% !important; margin:0 !important; padding:0 !important; } }
 </style>
 </head>
@@ -1241,9 +1254,9 @@ export function render_분석서(data, pageTitle = '') {
 }
 
 // 전체 HTML 생성 (모든 유형 합치기)
-export function renderAllTypes(jsonData, webtoonImageUrl = null, pageTitle = '리얼고 1학년 26년 1학기 중간고사 대비') {
+export function renderAllTypes(jsonData, panelImages = [], pageTitle = '리얼고 1학년 26년 1학기 중간고사 대비') {
   return {
-    '01_본문노트': render01_본문노트(jsonData, webtoonImageUrl, pageTitle),
+    '01_본문노트': render01_본문노트(jsonData, panelImages, pageTitle),
     '03_문장해석': render03_문장해석(jsonData, pageTitle),
     '08_핵심어휘': render08_핵심어휘(jsonData, pageTitle),
     '09_한줄해석': render09_한줄해석(jsonData, pageTitle),
