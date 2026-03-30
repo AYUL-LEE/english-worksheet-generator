@@ -64,7 +64,6 @@ export default async function handler(req, res) {
     browser = null;
 
     const pdfBuffer = fs.readFileSync(tmpPdfPath);
-    fs.unlinkSync(tmpHtmlPath);
     fs.unlinkSync(tmpPdfPath);
 
     res.setHeader('Content-Type', 'application/pdf');
