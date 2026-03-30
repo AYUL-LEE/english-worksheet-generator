@@ -415,24 +415,22 @@ async function downloadPDF() {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-       const title = window.lastResult?.debug?.[0]?.rawJSON?.passage?.korean_title 
-           || "영어학습지";
-
-const date = new Date().toISOString().slice(0,10);
-a.download = `${title}_${date}.pdf`;
+            const title = window.lastResult?.debug?.[0]?.rawJSON?.passage?.korean_title || "영어학습지";
+            const date = new Date().toISOString().slice(0,10);
+            a.download = `${title}_${date}.pdf`;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
-            
             alert('✅ PDF 다운로드 완료!');
         } else {
-            throw new Error('PDF 생성 실패');
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || 'PDF 생성 실패');
         }
-        
+
     } catch (error) {
         console.error('PDF 다운로드 오류:', error);
-        alert('PDF 다운로드 중 오류가 발생했습니다.');
+        alert('PDF 오류: ' + error.message);
     }
 }
 
