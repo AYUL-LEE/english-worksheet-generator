@@ -401,6 +401,10 @@ async function downloadPDF() {
     }
     // 브라우저 인쇄 기능으로 PDF 저장 (서버 불필요, 이미지 완벽 출력)
     const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+        alert('팝업이 차단되었습니다.\n브라우저 주소창 오른쪽의 팝업 차단 아이콘을 클릭하여 허용해주세요.');
+        return;
+    }
     printWindow.document.open();
     printWindow.document.write(generatedHTML);
     printWindow.document.close();
@@ -417,26 +421,32 @@ async function downloadPDF() {
     }
 }
 
-// 샘플 PDF 다운로드 (AI 없이, 서버 목업 데이터 사용)
+// 샘플 PDF 다운로드 (AI 없이, 서버 목업 데이터 사용 → 브라우저 인쇄로 저장)
 async function downloadSamplePDF() {
     const btn = event.target;
     btn.textContent = '생성 중...';
     btn.disabled = true;
     try {
-        const response = await fetch('/api/preview-pdf');
-        if (response.ok) {
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `샘플_학습지_${new Date().toISOString().slice(0,10)}.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
+        const response = await fetch('/api/preview-html');
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error('서버 오류: ' + text.slice(0, 200));
+        }
+        const html = await response.text();
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            alert('팝업이 차단되었습니다. 브라우저에서 팝업을 허용해주세요.');
+            return;
+        }
+        printWindow.document.open();
+        printWindow.document.write(html);
+        printWindow.document.close();
+        const triggerPrint = () => { printWindow.focus(); printWindow.print(); };
+        if (printWindow.document.readyState === 'complete') {
+            triggerPrint();
         } else {
-            const err = await response.json();
-            alert('샘플 PDF 오류: ' + err.error);
+            printWindow.onload = triggerPrint;
+            setTimeout(triggerPrint, 1500);
         }
     } catch (error) {
         alert('샘플 PDF 오류: ' + error.message);

@@ -133,8 +133,8 @@ app.post('/api/generate-pdf', async (req, res) => {
   }
 });
 
-// 샘플 PDF 다운로드 (AI 호출 없이 목업 데이터로 PDF 생성)
-app.get('/api/preview-pdf', async (req, res) => {
+// 샘플 HTML 반환 (AI 호출 없이 목업 데이터로 HTML 생성 → 클라이언트에서 window.print() 사용)
+app.get('/api/preview-html', async (req, res) => {
   try {
     const { renderAllTypes, render_단어테스트, render_워크북_어법선택, render_워크북_어법수정, render_워크북_어휘선택, render_워크북_순서배열 } = await import(`./utils/templateRenderer.js?v=${Date.now()}`);
 
@@ -229,14 +229,13 @@ app.get('/api/preview-pdf', async (req, res) => {
 
     const combinedHTML = sections.filter(Boolean).join('\n');
 
-    // generate-pdf 핸들러 재사용
-    req.body = { htmlContent: combinedHTML };
-    req.method = 'POST';
-    const pdfHandler = await import('./api/generate-pdf.js');
-    return pdfHandler.default(req, res);
+    // HTML 직접 반환 (클라이언트에서 window.print()로 PDF 저장)
+    const fullHTML = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><style>@media print { @page { size: A4; margin: 0; } }</style></head><body>${combinedHTML}</body></html>`;
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(fullHTML);
 
   } catch (e) {
-    console.error('샘플 PDF 오류:', e);
+    console.error('샘플 HTML 오류:', e);
     res.status(500).json({ error: e.message });
   }
 });
