@@ -45,8 +45,8 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
     </div>`).join('');
 
   // 4컷 웹툰 섹션 - 개별 패널 + CSS 말풍선
-  // 한글/한자/일본어 문자 필터링 (영문만 허용)
-  const stripNonEnglish = (text) => (text || '').replace(/[^\x00-\x7F]/g, '').trim();
+  // 영어 알파벳/숫자/기본 구두점만 허용 (한글·한자·일본어 등 완전 차단)
+  const stripNonEnglish = (text) => (text || '').replace(/[^\x20-\x7E]/g, '').trim();
   const validPanels = (Array.isArray(panelImages) ? panelImages : []).slice(0, 4);
   const comicGridHTML = validPanels.length > 0 ? `
   <div class="comic-grid">
