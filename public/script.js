@@ -431,31 +431,75 @@ async function downloadPDF() {
     btn.textContent = 'PDF 생성 중...';
     btn.disabled = true;
 
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
     try {
-        const response = await fetch('/api/generate-pdf', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ htmlContent: generatedHTML, title: pdfTitle })
-        });
-        if (!response.ok) {
-            const err = await response.json().catch(() => ({}));
-            throw new Error(err.error || 'PDF 생성 실패');
+        if (isLocal) {
+            // 로컬: 서버 사이드 Puppeteer PDF
+            const response = await fetch('/api/generate-pdf', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ htmlContent: generatedHTML, title: pdfTitle })
+            });
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error || 'PDF 생성 실패');
+            }
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${pdfTitle}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        } else {
+            // Vercel: 클라이언트 사이드 html2pdf.js (서버 불필요)
+            await downloadPDFClientSide(generatedHTML, pdfTitle);
         }
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${pdfTitle}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
     } catch (error) {
-        alert('PDF 오류: ' + error.message + '\n\n인쇄창으로 저장하시려면 HTML 다운로드 후 Ctrl+P를 사용하세요.');
+        alert('PDF 오류: ' + error.message);
     } finally {
         btn.textContent = origText;
         btn.disabled = false;
     }
+}
+
+async function downloadPDFClientSide(html, title) {
+    // html2pdf.js 동적 로드
+    if (!window.html2pdf) {
+        await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+
+    // 전체 HTML을 iframe에 렌더링 후 body 추출
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;height:1123px;border:none;';
+    document.body.appendChild(iframe);
+
+    await new Promise(resolve => {
+        iframe.onload = resolve;
+        iframe.srcdoc = html;
+        setTimeout(resolve, 3000);
+    });
+
+    const content = iframe.contentDocument.body;
+
+    await html2pdf().set({
+        margin: 0,
+        filename: `${title}.pdf`,
+        image: { type: 'jpeg', quality: 0.95 },
+        html2canvas: { scale: 2, useCORS: true, logging: false, allowTaint: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }).from(content).save();
+
+    document.body.removeChild(iframe);
 }
 
 // 샘플 PDF 다운로드 (AI 없이, 서버 목업 데이터 사용 → 브라우저 인쇄로 저장)
