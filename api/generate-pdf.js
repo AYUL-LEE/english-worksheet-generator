@@ -48,7 +48,7 @@ export default async function handler(req, res) {
       /<link[^>]*fonts\.googleapis\.com[^>]*>/gi, ''
     );
     await page.setContent(cleanedHTML, {
-      waitUntil: 'domcontentloaded',
+      waitUntil: 'networkidle2',
       timeout: 180000,
     });
 

@@ -326,16 +326,11 @@ JSON만 출력하세요.`;
                 model: 'dall-e-3',
                 prompt,
                 n: 1,
-                size: '1792x1024',
+                size: '1024x1024',
                 quality: 'standard',
               });
-              const tempUrl = resp.data[0].url;
-              // URL 만료 방지: base64로 즉시 변환
-              const imgResp = await fetch(tempUrl);
-              const buffer = await imgResp.arrayBuffer();
-              const base64 = Buffer.from(buffer).toString('base64');
-              const dataUrl = `data:image/png;base64,${base64}`;
-              return { url: dataUrl, dialogue };
+              const imageUrl = resp.data[0].url;
+              return { url: imageUrl, dialogue };
             } catch (e) {
               console.error(`패널 ${idx + 1} 생성 실패:`, e.message);
               return { url: null, dialogue };
