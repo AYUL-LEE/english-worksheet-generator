@@ -258,7 +258,12 @@ async function generateWorksheet() {
                 pageTitle
             })
         });
-        
+
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(`서버 오류 ${response.status}: ${text.slice(0, 200)}`);
+        }
+
         const data = await response.json();
         
         if (data.success) {
