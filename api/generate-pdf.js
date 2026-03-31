@@ -48,9 +48,22 @@ export default async function handler(req, res) {
       /<link[^>]*fonts\.googleapis\.com[^>]*>/gi, ''
     );
     await page.setContent(cleanedHTML, {
-      waitUntil: 'networkidle2',
+      waitUntil: 'domcontentloaded',
       timeout: 180000,
     });
+
+    // 이미지 로딩 대기 (최대 15초, 실패해도 PDF 생성 계속)
+    await page.evaluate(() => new Promise((resolve) => {
+      const imgs = Array.from(document.querySelectorAll('img'));
+      if (imgs.length === 0) return resolve();
+      let done = 0;
+      const finish = () => { if (++done >= imgs.length) resolve(); };
+      imgs.forEach(img => {
+        if (img.complete) finish();
+        else { img.onload = finish; img.onerror = finish; }
+      });
+      setTimeout(resolve, 15000);
+    }));
 
     await page.pdf({
       path: tmpPdfPath,
