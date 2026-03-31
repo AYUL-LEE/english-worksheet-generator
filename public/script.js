@@ -435,7 +435,7 @@ async function downloadPDF() {
 
     try {
         if (isLocal) {
-            // 로컬: 서버 사이드 Puppeteer PDF
+            // 로컬: Puppeteer 서버 사이드 PDF
             const response = await fetch('/api/generate-pdf', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -455,18 +455,18 @@ async function downloadPDF() {
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
         } else {
-            // Vercel: 클라이언트 사이드 html2pdf.js (서버 불필요)
+            // Vercel: 클라이언트 사이드 html2pdf.js
             await downloadPDFClientSide(generatedHTML, pdfTitle);
         }
     } catch (error) {
-        alert('PDF 오류: ' + error.message);
+        alert('PDF 오류: ' + error.message + '\n\nHTML 다운로드 후 Ctrl+P로 저장하세요.');
     } finally {
         btn.textContent = origText;
         btn.disabled = false;
     }
 }
 
-async function downloadPDFClientSide(html, title) {
+async function downloadPDFClientSide(html, filename) {
     // html2pdf.js 동적 로드
     if (!window.html2pdf) {
         await new Promise((resolve, reject) => {
@@ -478,27 +478,41 @@ async function downloadPDFClientSide(html, title) {
         });
     }
 
-    // 전체 HTML을 iframe에 렌더링 후 body 추출
+    // iframe으로 HTML 렌더링 후 캡처
     const iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;height:1123px;border:none;';
+    iframe.style.cssText = 'position:fixed;top:0;left:0;width:210mm;height:297mm;border:none;opacity:0;pointer-events:none;';
     document.body.appendChild(iframe);
 
     await new Promise(resolve => {
         iframe.onload = resolve;
-        iframe.srcdoc = html;
-        setTimeout(resolve, 3000);
+        iframe.contentDocument.open();
+        iframe.contentDocument.write(html);
+        iframe.contentDocument.close();
     });
 
-    const content = iframe.contentDocument.body;
+    // 이미지 로딩 대기 (최대 10초)
+    await new Promise(resolve => {
+        const imgs = Array.from(iframe.contentDocument.querySelectorAll('img'));
+        if (imgs.length === 0) return resolve();
+        let done = 0;
+        const finish = () => { if (++done >= imgs.length) resolve(); };
+        imgs.forEach(img => {
+            if (img.complete) finish();
+            else { img.onload = finish; img.onerror = finish; }
+        });
+        setTimeout(resolve, 10000);
+    });
 
-    await html2pdf().set({
+    const element = iframe.contentDocument.body;
+    const opt = {
         margin: 0,
-        filename: `${title}.pdf`,
+        filename: `${filename}.pdf`,
         image: { type: 'jpeg', quality: 0.95 },
-        html2canvas: { scale: 2, useCORS: true, logging: false, allowTaint: true },
+        html2canvas: { scale: 2, useCORS: true, allowTaint: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    }).from(content).save();
+    };
 
+    await window.html2pdf().set(opt).from(element).save();
     document.body.removeChild(iframe);
 }
 

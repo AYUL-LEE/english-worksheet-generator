@@ -309,42 +309,43 @@ JSON만 출력하세요.`;
 
       console.log(`✅ 지문 ${i+1} 완료 - 토큰: ${completion.usage.total_tokens}`);
 
-      // DALL-E 3 4컷 웹툰 이미지 - Vercel에서는 타임아웃 방지를 위해 스킵
+      // DALL-E 3 4컷 웹툰 이미지 - 패널별 개별 생성 (병렬)
       let panelImages = [];
       const isVercel = process.env.VERCEL === '1';
-      if (isVercel) {
-        console.log('⏭️ Vercel 환경: DALL-E 스킵 (타임아웃 방지)');
-      }
       try {
         const captions = jsonData.type_01_본문노트?.웹툰캡션 ?? [];
 
-        panelImages = isVercel ? captions.slice(0, 4).map(panel => ({
-          url: null,
-          dialogue: typeof panel === 'object' ? (panel.dialogue ?? '') : ''
-        })) : await Promise.all(
-          captions.slice(0, 4).map(async (panel, idx) => {
-            const scene = typeof panel === 'string' ? panel : (panel.scene ?? panel);
-            const dialogue = typeof panel === 'object' ? (panel.dialogue ?? '') : '';
+        if (isVercel) {
+          console.log('⏭️ Vercel 환경: DALL-E 스킵 (타임아웃 방지)');
+          panelImages = captions.slice(0, 4).map(panel => ({
+            url: null,
+            dialogue: typeof panel === 'object' ? (panel.dialogue ?? '') : ''
+          }));
+        } else {
+          panelImages = await Promise.all(
+            captions.slice(0, 4).map(async (panel, idx) => {
+              const scene = typeof panel === 'string' ? panel : (panel.scene ?? panel);
+              const dialogue = typeof panel === 'object' ? (panel.dialogue ?? '') : '';
 
-            const prompt = `Webtoon comic panel, consistent art style across all panels: ${scene}. SAME character design throughout: a teenage student with short black hair, big round eyes, simple round face, wearing a white school uniform. Clean Korean webtoon style, bold black outlines, flat bright colors, no shading. Absolutely NO text of any kind, NO speech bubbles, NO written words, NO Korean characters, NO Chinese characters, NO Japanese characters, NO Latin letters, NO numbers, NO captions, NO labels anywhere in the image. Pure illustration only. Fill entire canvas.`;
+              const prompt = `Webtoon comic panel, consistent art style across all panels: ${scene}. SAME character design throughout: a teenage student with short black hair, big round eyes, simple round face, wearing a white school uniform. Clean Korean webtoon style, bold black outlines, flat bright colors, no shading. Absolutely NO text of any kind, NO speech bubbles, NO written words, NO Korean characters, NO Chinese characters, NO Japanese characters, NO Latin letters, NO numbers, NO captions, NO labels anywhere in the image. Pure illustration only. Fill entire canvas.`;
 
-            try {
-              const resp = await openai.images.generate({
-                model: 'dall-e-3',
-                prompt,
-                n: 1,
-                size: '1024x1024',
-                quality: 'standard',
-              });
-              const imageUrl = resp.data[0].url;
-              return { url: imageUrl, dialogue };
-            } catch (e) {
-              console.error(`패널 ${idx + 1} 생성 실패:`, e.message);
-              return { url: null, dialogue };
-            }
-          })
-        );
-        if (!isVercel) console.log(`🎨 웹툰 패널 ${panelImages.filter(p => p.url).length}/4 생성 완료`);
+              try {
+                const resp = await openai.images.generate({
+                  model: 'dall-e-3',
+                  prompt,
+                  n: 1,
+                  size: '1024x1024',
+                  quality: 'standard',
+                });
+                return { url: resp.data[0].url, dialogue };
+              } catch (e) {
+                console.error(`패널 ${idx + 1} 생성 실패:`, e.message);
+                return { url: null, dialogue };
+              }
+            })
+          );
+          console.log(`🎨 웹툰 패널 ${panelImages.filter(p => p.url).length}/4 생성 완료`);
+        }
       } catch (imgError) {
         console.error('이미지 생성 실패:', imgError.message);
       }
