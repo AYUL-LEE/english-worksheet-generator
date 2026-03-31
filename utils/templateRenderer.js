@@ -45,15 +45,20 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
     </div>`).join('');
 
   // 4컷 웹툰 섹션 - 개별 패널 + CSS 말풍선
+  // 한글/한자/일본어 문자 필터링 (영문만 허용)
+  const stripNonEnglish = (text) => (text || '').replace(/[^\x00-\x7F]/g, '').trim();
   const validPanels = (Array.isArray(panelImages) ? panelImages : []).slice(0, 4);
   const comicGridHTML = validPanels.length > 0 ? `
   <div class="comic-grid">
-    ${validPanels.map((p, i) => `
+    ${validPanels.map((p, i) => {
+      const dlg = stripNonEnglish(p.dialogue);
+      return `
     <div class="comic-panel">
-      ${p.url ? `<img src="${p.url}" alt="패널 ${i+1}" class="panel-img" />` : '<div class="panel-placeholder"></div>'}
+      ${p.url ? `<img src="${p.url}" alt="Panel ${i+1}" class="panel-img" />` : '<div class="panel-placeholder"></div>'}
       <div class="panel-num">${i + 1}</div>
-      ${p.dialogue ? `<div class="speech-bubble">${p.dialogue}</div>` : ''}
-    </div>`).join('')}
+      ${dlg ? `<div class="speech-bubble">${dlg}</div>` : ''}
+    </div>`;
+    }).join('')}
   </div>` : '';
 
   return `
@@ -77,7 +82,7 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
   .title-korean { font-size:12px !important; font-weight:700; color:#1E293B; margin-bottom:2px; }
   .title-english { font-size:9.5px !important; color:#888; font-style:italic; }
 
-  .text-content { line-height:2.0; color:#374151; padding:8px 10px; background:#FEFEFE; border-radius:4px; font-weight:600; word-break:keep-all; margin-bottom:8px; font-size:13px !important; }
+  .text-content { line-height:2.0; color:#374151; padding:8px 10px; background:#FEFEFE; border-radius:4px; font-weight:400; word-break:keep-all; margin-bottom:8px; font-size:13px !important; }
   .sent-num { color:#5B8A00; font-weight:700; }
 
   .flow-section { margin-bottom:8px; }
@@ -1257,7 +1262,7 @@ export function render_분석서(data, pageTitle = '') {
 }
 
 // 전체 HTML 생성 (모든 유형 합치기)
-export function renderAllTypes(jsonData, panelImages = [], pageTitle = '리얼고 1학년 26년 1학기 중간고사 대비') {
+export function renderAllTypes(jsonData, panelImages = [], pageTitle = '') {
   return {
     '01_본문노트': render01_본문노트(jsonData, panelImages, pageTitle),
     '03_문장해석': render03_문장해석(jsonData, pageTitle),

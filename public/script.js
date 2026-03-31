@@ -420,18 +420,42 @@ async function downloadPDF() {
         alert('먼저 학습지를 생성해주세요.');
         return;
     }
-    // PDF 저장 시 제목 자동 설정 (브라우저가 document.title을 파일명으로 사용)
     const korTitle = window.lastResult?.debug?.[0]?.rawJSON?.passage?.korean_title
                   || window.lastResult?.results?.[0]?.passage?.korean_title
                   || '';
     const date = new Date().toISOString().slice(0,10);
     const pdfTitle = korTitle ? `${korTitle}_${date}` : `영어학습지_${date}`;
-    const htmlWithTitle = generatedHTML.replace(/<title>[^<]*<\/title>/i, `<title>${pdfTitle}</title>`);
-    // Windows print dialog는 부모 페이지 title을 파일명으로 사용
-    const originalTitle = document.title;
-    document.title = pdfTitle;
-    printHTML(htmlWithTitle);
-    setTimeout(() => { document.title = originalTitle; }, 3000);
+
+    const btn = document.getElementById('downloadPdf');
+    const origText = btn.textContent;
+    btn.textContent = 'PDF 생성 중...';
+    btn.disabled = true;
+
+    try {
+        const response = await fetch('/api/generate-pdf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ htmlContent: generatedHTML, title: pdfTitle })
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.error || 'PDF 생성 실패');
+        }
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${pdfTitle}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        alert('PDF 오류: ' + error.message + '\n\n인쇄창으로 저장하시려면 HTML 다운로드 후 Ctrl+P를 사용하세요.');
+    } finally {
+        btn.textContent = origText;
+        btn.disabled = false;
+    }
 }
 
 // 샘플 PDF 다운로드 (AI 없이, 서버 목업 데이터 사용 → 브라우저 인쇄로 저장)
