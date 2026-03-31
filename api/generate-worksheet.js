@@ -309,12 +309,19 @@ JSON만 출력하세요.`;
 
       console.log(`✅ 지문 ${i+1} 완료 - 토큰: ${completion.usage.total_tokens}`);
 
-      // DALL-E 3 4컷 웹툰 이미지 - 패널별 개별 생성 (병렬)
+      // DALL-E 3 4컷 웹툰 이미지 - Vercel에서는 타임아웃 방지를 위해 스킵
       let panelImages = [];
+      const isVercel = process.env.VERCEL === '1';
+      if (isVercel) {
+        console.log('⏭️ Vercel 환경: DALL-E 스킵 (타임아웃 방지)');
+      }
       try {
         const captions = jsonData.type_01_본문노트?.웹툰캡션 ?? [];
 
-        panelImages = await Promise.all(
+        panelImages = isVercel ? captions.slice(0, 4).map(panel => ({
+          url: null,
+          dialogue: typeof panel === 'object' ? (panel.dialogue ?? '') : ''
+        })) : await Promise.all(
           captions.slice(0, 4).map(async (panel, idx) => {
             const scene = typeof panel === 'string' ? panel : (panel.scene ?? panel);
             const dialogue = typeof panel === 'object' ? (panel.dialogue ?? '') : '';
@@ -337,7 +344,7 @@ JSON만 출력하세요.`;
             }
           })
         );
-        console.log(`🎨 웹툰 패널 ${panelImages.filter(p => p.url).length}/4 생성 완료`);
+        if (!isVercel) console.log(`🎨 웹툰 패널 ${panelImages.filter(p => p.url).length}/4 생성 완료`);
       } catch (imgError) {
         console.error('이미지 생성 실패:', imgError.message);
       }
