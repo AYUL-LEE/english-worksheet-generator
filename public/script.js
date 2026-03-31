@@ -262,42 +262,37 @@ async function generateWorksheet() {
         const data = await response.json();
         
         if (data.success) {
-            window.lastResult = data; // ✅ 콘솔에서 확인 가능하게 저장
+            window.lastResult = data;
             console.log("✅ data.success:", data.success, data);
             console.log("🧩 raw GPT JSON:", JSON.stringify(data.debug?.[0]?.rawJSON, null, 2));
             generatedResults = data.results;
-            
+
             // HTML 생성
             generatedHTML = generatePreviewHTML(data.results, data.passageCount, selectedTypes);
 
-            // 히스토리에 저장 ⭐ 여기 추가
+            // 히스토리에 저장
             if (data.debug && data.debug[0]) {
                 saveToHistory(data.debug[0].rawJSON, data.passageCount, selectedTypes);
             }
-            
-            // 결과 섹션 표시
+
+            // 결과 섹션 표시 (성공했을 때만)
             document.getElementById('resultSection').style.display = 'block';
-            
-            // 생성 요약 표시
+
             const summary = `✅ 생성 완료: ${data.passageCount}개 지문, ${selectedTypeCount}개 유형
 📊 총 ${Object.keys(data.results).length}개 학습자료 생성됨`;
-            
             document.getElementById('generationSummary').textContent = summary;
-            
 
             showPopup('🎉 학습지 생성이 완료되었습니다!');
-            
+
         } else {
             alert('오류: ' + data.error);
         }
-        
+
     } catch (error) {
-        // 에러 처리...
-    }finally {
-        // ⭐ 여기서 로딩 종료
+        alert('오류: ' + (error.message || '알 수 없는 오류'));
+    } finally {
         document.getElementById('generateBtn').disabled = false;
         document.getElementById('loading').style.display = 'none';
-         document.getElementById('resultSection').style.display = 'block'; // ✅ 항상 표시
     }
     
 }
