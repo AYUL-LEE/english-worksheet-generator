@@ -737,9 +737,6 @@ function saveToHistory(jsonData, passageCount, selectedTypes) {
     
     // 저장
     localStorage.setItem('worksheet_history', JSON.stringify(history));
-    
-    // 히스토리 UI 업데이트
-    loadHistory();
 }
 
 // // 히스토리 로드
