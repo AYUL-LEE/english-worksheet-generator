@@ -6,7 +6,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { passages, apiKey, model, selectedTypes, pageTitle = '리얼고 1학년 26년 1학기 중간고사 대비' } = req.body;
+  const { passages, apiKey, model, selectedTypes, pageTitle = '' } = req.body;
 
   if (!apiKey || !passages || passages.length === 0) {
     return res.status(400).json({ error: '필수 입력값이 없습니다.' });
@@ -45,10 +45,10 @@ ${passage}
       }
     ],
     "웹툰캡션": [
-      {"scene": "Panel 1 scene description in English (what to draw, no text, no written words)", "dialogue": "Short spoken line or caption for this panel (max 10 words, English)"},
-      {"scene": "Panel 2 scene description in English (what to draw, no text, no written words)", "dialogue": "Short spoken line or caption for this panel (max 10 words, English)"},
-      {"scene": "Panel 3 scene description in English (what to draw, no text, no written words)", "dialogue": "Short spoken line or caption for this panel (max 10 words, English)"},
-      {"scene": "Panel 4 scene description in English (what to draw, no text, no written words)", "dialogue": "Short spoken line or caption for this panel (max 10 words, English)"}
+      {"scene": "Panel 1 scene description in English (what to draw, no text, no written words)", "dialogue": "ENGLISH ONLY (max 8 words, NO Korean, NO Chinese, NO Japanese characters)"},
+      {"scene": "Panel 2 scene description in English (what to draw, no text, no written words)", "dialogue": "ENGLISH ONLY (max 8 words, NO Korean, NO Chinese, NO Japanese characters)"},
+      {"scene": "Panel 3 scene description in English (what to draw, no text, no written words)", "dialogue": "ENGLISH ONLY (max 8 words, NO Korean, NO Chinese, NO Japanese characters)"},
+      {"scene": "Panel 4 scene description in English (what to draw, no text, no written words)", "dialogue": "ENGLISH ONLY (max 8 words, NO Korean, NO Chinese, NO Japanese characters)"}
     ]
   },
   "type_03_문장해석": {
@@ -67,8 +67,8 @@ ${passage}
         "word": "핵심단어 (준동사는 동사원형으로)",
         "pos": "품사약어 (n./v./adj./adv./phr. 등)",
         "meanings": ["본문 문맥에서의 뜻 (가장 먼저)", "기타 주요 뜻2"],
-        "synonyms": ["동의어1", "동의어2"],
-        "antonyms": ["반의어1", "반의어2 (없으면 빈 배열)"]
+        "synonyms": ["동의어1", "동의어2", "동의어3"],
+        "antonyms": ["반의어1", "반의어2", "반의어3"]
       }
     ]
   },
@@ -143,8 +143,8 @@ ${passage}
         "chunked_english": "①There has been / a lot of **discussion** / on / ②why moths **are attracted** to **light**.",
         "chunked_korean": "있어 왔다 / 많은 논의가 / 나방이 빛에 끌리는 이유에 대한.",
         "words": [
-          {"word": "discussion", "meaning_ko": "논의", "synonyms": ["debate", "conversation"], "antonyms": ["agreement", "silence"]},
-          {"word": "attracted", "meaning_ko": "끌리다", "synonyms": ["drawn", "appealed"], "antonyms": ["repelled", "deterred"]}
+          {"word": "discussion", "meaning_ko": "논의", "synonyms": ["debate", "conversation", "dialogue"], "antonyms": ["agreement", "silence", "consensus"]},
+          {"word": "attracted", "meaning_ko": "끌리다", "synonyms": ["drawn", "appealed", "lured"], "antonyms": ["repelled", "deterred", "repulsed"]}
         ],
         "grammar_points": [
           "be attracted to: 수동태 표현이에요! attract는 '끌다'라는 타동사인데, 나방이 빛에 '끌리는' 것이므로 수동태를 써야 해요",
@@ -162,15 +162,30 @@ ${passage}
 1. **문장 분리**: 마침표(.), 물음표(?), 느낌표(!) 기준으로 모든 문장을 개별 분리
    - 예시: 지문에 7개 문장이 있으면 sentences 배열에 7개 객체 필요
 2. **핵심어휘**: 15-20개의 단어로 선정.
-   - **반드시 고등학교 2, 3학년 수준의 단어만 선정**: 동사, 명사, 부사, 형용사만 포함.
-   - **숙어(phrasal verb/idiom)도 포함**: 예를 들어 'look forward to'는 하나의 숙어로 처리 (pos: phr.)
-   - **준동사는 동사원형으로**: 지문에 'born'이 있으면 'be born' 또는 'bear'로, 'running'이 있으면 'run'으로 변경
-   - **아래 쉬운 단어는 절대 포함 금지** (중학교 이하 수준): help, college, soon, good, bad, make, go, come, think, know, use, give, take, keep, find, say, tell, ask, show, work, study, learn, name, life, time, year, day, way, place, people, person, thing, part, also, very, just, only, even, still, well, often, here, there, first, last, new, old, small, large, high, low, long, short, many, much, few, less, more, most, same, own, each, other, another, both, either, every, any, some, all, most, such, like, right, left, back, next, then, now, where, when, why, how, what, which, who
-   - **반드시 고2 수준 이상만**: metabolism, paradigm, cooperative, nuanced, paradox, prominent, distinguished, subsequent, conduct, outstanding, nutrition, molecular, hypothesis 등의 수준
-   - **선택 기준**: 문장해석 페이지의 WORDS & PHRASES 단어장으로 활용되므로, 학생이 모를 만한 단어 위주로 엄선
-   - meanings: 첫 번째는 반드시 본문 문맥에서 사용된 뜻. **뜻은 1~4개 유동적으로 — 억지로 2개로 맞추지 말 것**
-   - synonyms: **있는 만큼만** — 없으면 빈 배열, 너무 억지로 만들지 말 것
-   - antonyms: **반의어가 있는 단어는 반드시 채워야 함. 있는 만큼만, 없으면 빈 배열**
+
+   ▶ **[STEP 1] 지문 난이도 자동 판별 후 어휘 수준 결정**
+   지문을 분석하여 Lexile 수준을 추정하고, 아래 기준에 따라 핵심어휘·동의어·반의어 수준을 결정하세요:
+
+   | 지문 Lexile 수준 | CEFR | 어휘 수준 기준 |
+   |---|---|---|
+   | 800L ~ 1000L (고1 평이) | B1~B2 | 고1~2 교과서 수준. 학생이 모를 만한 중급 어휘 선정 (e.g. assess, contribute, consistent) |
+   | 1000L ~ 1200L (고2 일반) | B2 | 고2 수준. 수능 빈출 어휘 위주 (e.g. perceive, prominent, substantial, derive) |
+   | 1200L ~ 1400L (고3 수능) | B2~C1 | 수능 고빈도 학술어휘 (e.g. empirical, nuanced, paradigm, subsequent, hypothesis) |
+   | 1400L ~ 1600L+ (고3 고난도 학술) | C1~C2 | 대학 수학 수준 고급 학술어휘 (e.g. epistemological, proliferate, dichotomy, axiom, mitigate, corroborate) |
+
+   **동의어(synonyms)와 반의어(antonyms)도 반드시 지문과 동일한 난이도 수준의 단어로 구성할 것.**
+   - 지문이 900L이면 synonyms/antonyms도 B1~B2 수준 단어
+   - 지문이 1500L이면 synonyms/antonyms도 C1~C2 수준 고급 학술어휘
+
+   ▶ **[STEP 2] 어휘 선정 규칙**
+   - 동사, 명사, 부사, 형용사만 포함 (품사: n./v./adj./adv./phr.)
+   - **숙어(phrasal verb/idiom)도 포함**: 'look forward to'는 하나의 숙어로 처리 (pos: phr.)
+   - **준동사는 동사원형으로**: 지문에 'born'이 있으면 'bear'로, 'running'이 있으면 'run'으로
+   - **중학교 이하 기초단어는 절대 포함 금지**: help, good, bad, make, go, come, think, know, use, give, take, keep, find, say, tell, ask, show, work, study, learn, life, time, year, day, way, place, people, person, thing, also, very, just, only, even, still, well, often, new, old, small, large, high, low, long, short, many, much, few, more, most, same, own, each, other, every, any, some, all, like, right, back, next, then, now
+   - **선택 기준**: 문장해석 페이지의 WORDS & PHRASES 단어장으로 활용 → 지문 난이도에 맞게 학생이 모를 만한 단어 위주로 엄선
+   - meanings: 첫 번째는 반드시 본문 문맥에서 사용된 뜻. 뜻은 1~4개 유동적으로
+   - synonyms: **반드시 3개 이상** — 지문과 동일 난이도 수준의 단어로
+   - antonyms: **반드시 3개 이상** — 지문과 동일 난이도 수준의 단어로
 3. **논리흐름**: 지문의 논리 전개를 2~4단계로 나누어 작성하세요.
 4. **웹툰캡션**: 본문의 핵심 메시지를 함축하는 장면 4개를 DALL-E 이미지 생성용 영문 프롬프트로 작성하세요.
    - 스타일: "cartoon comic style, bold outlines, simple flat colors"를 각 캡션 앞에 고정으로 붙이세요.
@@ -206,7 +221,7 @@ ${passage}
    - tags: 각 문장에서 2-3개의 핵심 구문 포인트를 태그로 작성 (번호는 chunked_english의 ① ②와 대응)
    - badges: 서술형 출제 가능성 높은 문장은 ["서술형 출제 가능"], 빈칸 문제로 자주 출제될 문장은 ["빈칸"], 없으면 []
    - chunked_english: 슬래시(/)로 문장을 의미 단위로 청킹. ①②는 태그 번호와 대응하는 핵심 구문 앞에 붙임. **word**는 핵심 어휘를 bold로 표시
-   - words: 문장에서 고2~3 수준 핵심 단어만 (동의어/반의어 포함, 없으면 빈배열)
+   - words: 문장에서 지문 난이도에 맞는 핵심 단어만 (동의어/반의어도 동일 난이도 수준으로 구성, 없으면 빈배열)
    - grammar_points: 해당 문장의 어법 포인트를 1~3개 구체적으로 설명 (학생에게 설명하듯 친절하게)
 
 JSON만 출력하세요.`;
@@ -296,33 +311,41 @@ JSON만 출력하세요.`;
 
       // DALL-E 3 4컷 웹툰 이미지 - 패널별 개별 생성 (병렬)
       let panelImages = [];
+      const isVercel = process.env.VERCEL === '1';
       try {
         const captions = jsonData.type_01_본문노트?.웹툰캡션 ?? [];
 
-        panelImages = await Promise.all(
-          captions.slice(0, 4).map(async (panel, idx) => {
-            const scene = typeof panel === 'string' ? panel : (panel.scene ?? panel);
-            const dialogue = typeof panel === 'object' ? (panel.dialogue ?? '') : '';
+        if (isVercel) {
+          console.log('⏭️ Vercel 환경: DALL-E 스킵 (타임아웃 방지)');
+          panelImages = captions.slice(0, 4).map(panel => ({
+            url: null,
+            dialogue: typeof panel === 'object' ? (panel.dialogue ?? '') : ''
+          }));
+        } else {
+          panelImages = await Promise.all(
+            captions.slice(0, 4).map(async (panel, idx) => {
+              const scene = typeof panel === 'string' ? panel : (panel.scene ?? panel);
+              const dialogue = typeof panel === 'object' ? (panel.dialogue ?? '') : '';
 
-            const prompt = `A single cartoon panel in clean webtoon/manhwa style: ${scene}. Bold black outlines, flat bright colors. Absolutely NO text, NO speech bubbles, NO written words anywhere in the image. Square format, simple expressive cartoon characters. Fill entire canvas with the scene.`;
+              const prompt = `Webtoon comic panel, consistent art style across all panels: ${scene}. SAME character design throughout: a teenage student with short black hair, big round eyes, simple round face, wearing a white school uniform. Clean Korean webtoon style, bold black outlines, flat bright colors, no shading. Absolutely NO text of any kind, NO speech bubbles, NO written words, NO Korean characters, NO Chinese characters, NO Japanese characters, NO Latin letters, NO numbers, NO captions, NO labels anywhere in the image. Pure illustration only. Fill entire canvas.`;
 
-            try {
-              const resp = await openai.images.generate({
-                model: 'dall-e-3',
-                prompt,
-                n: 1,
-                size: '1792x1024',
-                quality: 'standard',
-              });
-              const tempUrl = resp.data[0].url;
-              return { url: tempUrl, dialogue };
-            } catch (e) {
-              console.error(`패널 ${idx + 1} 생성 실패:`, e.message);
-              return { url: null, dialogue };
-            }
-          })
-        );
-        console.log(`🎨 웹툰 패널 ${panelImages.filter(p => p.url).length}/4 생성 완료`);
+              try {
+                const resp = await openai.images.generate({
+                  model: 'dall-e-3',
+                  prompt,
+                  n: 1,
+                  size: '1024x1024',
+                  quality: 'standard',
+                });
+                return { url: resp.data[0].url, dialogue };
+              } catch (e) {
+                console.error(`패널 ${idx + 1} 생성 실패:`, e.message);
+                return { url: null, dialogue };
+              }
+            })
+          );
+          console.log(`🎨 웹툰 패널 ${panelImages.filter(p => p.url).length}/4 생성 완료`);
+        }
       } catch (imgError) {
         console.error('이미지 생성 실패:', imgError.message);
       }

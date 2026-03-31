@@ -45,15 +45,20 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
     </div>`).join('');
 
   // 4컷 웹툰 섹션 - 개별 패널 + CSS 말풍선
+  // 한글/한자/일본어 문자 필터링 (영문만 허용)
+  const stripNonEnglish = (text) => (text || '').replace(/[^\x00-\x7F]/g, '').trim();
   const validPanels = (Array.isArray(panelImages) ? panelImages : []).slice(0, 4);
   const comicGridHTML = validPanels.length > 0 ? `
   <div class="comic-grid">
-    ${validPanels.map((p, i) => `
+    ${validPanels.map((p, i) => {
+      const dlg = stripNonEnglish(p.dialogue);
+      return `
     <div class="comic-panel">
-      ${p.url ? `<img src="${p.url}" alt="패널 ${i+1}" class="panel-img" />` : '<div class="panel-placeholder"></div>'}
+      ${p.url ? `<img src="${p.url}" alt="Panel ${i+1}" class="panel-img" />` : '<div class="panel-placeholder"></div>'}
       <div class="panel-num">${i + 1}</div>
-      ${p.dialogue ? `<div class="speech-bubble">${p.dialogue}</div>` : ''}
-    </div>`).join('')}
+      ${dlg ? `<div class="speech-bubble">${dlg}</div>` : ''}
+    </div>`;
+    }).join('')}
   </div>` : '';
 
   return `
@@ -77,7 +82,7 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
   .title-korean { font-size:12px !important; font-weight:700; color:#1E293B; margin-bottom:2px; }
   .title-english { font-size:9.5px !important; color:#888; font-style:italic; }
 
-  .text-content { line-height:2.0; color:#374151; padding:8px 10px; background:#FEFEFE; border-radius:4px; font-weight:600; word-break:keep-all; margin-bottom:8px; font-size:13px !important; }
+  .text-content { line-height:2.0; color:#374151; padding:8px 10px; background:#FEFEFE; border-radius:4px; font-weight:400; word-break:keep-all; margin-bottom:8px; font-size:13px !important; }
   .sent-num { color:#5B8A00; font-weight:700; }
 
   .flow-section { margin-bottom:8px; }
@@ -90,10 +95,10 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
   .flow-title { font-weight:700; color:#1E293B; margin-bottom:2px; font-size:10.5px !important; }
   .flow-desc { color:#475569; line-height:1.4; font-size:10px !important; }
 
-  /* 4컷 만화 - 별도 페이지 */
-  .comic-page { page-break-before:always; padding-top:8mm; }
-  .comic-section-title { font-size:9.5px !important; font-weight:700; color:#fff; background:#5B8A00; padding:3px 8px; margin-bottom:6px; border-radius:3px; letter-spacing:0.5px; }
-  .comic-grid { display:grid; grid-template-columns:1fr; grid-template-rows:repeat(4, 70mm); gap:3px; width:100%; border:2px solid #1a1a1a; border-radius:4px; overflow:hidden; background:#1a1a1a; }
+  /* 4컷 만화 - 같은 페이지 */
+  .comic-page { margin-top:6px; }
+  .comic-section-title { font-size:9.5px !important; font-weight:700; color:#fff; background:#5B8A00; padding:3px 8px; margin-bottom:4px; border-radius:3px; letter-spacing:0.5px; }
+  .comic-grid { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:48mm 48mm; gap:2px; width:100%; border:2px solid #1a1a1a; border-radius:4px; overflow:hidden; background:#1a1a1a; }
   .comic-panel { position:relative; overflow:hidden; background:#f5f5f5; }
   .panel-img { width:100%; height:100%; object-fit:cover; display:block; }
   .panel-placeholder { width:100%; height:100%; background:#e8e8e8; }
@@ -190,10 +195,10 @@ export function render03_문장해석(data, pageTitle = '') {
   .section-title .english { font-weight:400; color:#888; font-style:italic; font-size:10px; display:block; }
 
   /* 문장 행 */
-  .sentence-row { display:grid; grid-template-columns:28px 3fr 2fr; gap:0 12px; padding:26px 0; border-bottom:1px solid #F0F0F0; align-items:start; break-inside:avoid; }
+  .sentence-row { display:grid; grid-template-columns:28px 3fr 2fr; gap:0 12px; padding:4px 0 40px 0; border-bottom:1px solid #F0F0F0; align-items:start; break-inside:avoid; }
   .sentence-row:last-of-type { border-bottom:none; }
   .num { font-size:11px; font-weight:700; color:#5B8A00; padding-top:1px; white-space:nowrap; }
-  .english-text { font-size:14px; line-height:1.85; font-weight:500; color:#111; word-break:keep-all; text-align:justify; }
+  .english-text { font-size:13px; line-height:1.85; font-weight:500; color:#111; word-break:keep-all; text-align:justify; }
   .korean-text { font-size:10.5px; line-height:1.65; color:#444; word-break:keep-all; }
 
   /* WORDS & PHRASES */
@@ -691,7 +696,7 @@ export function render09_한줄해석(data, pageTitle = '') {
   .item { border:1px solid #D0E8A0; border-radius:6px; overflow:hidden; margin-bottom:10px; display:flex; flex-direction:column; break-inside:avoid; }
   .item-head { display:flex; align-items:flex-start; gap:8px; padding:8px 12px; background:#F2F8E0; border-bottom:1px dashed #C8E090; }
   .num { color:#5B8A00; font-weight:700; font-size:11px !important; flex-shrink:0; min-width:22px; }
-  .eng { color:#111827; font-weight:600; font-size:11px !important; flex:1; line-height:1.6; }
+  .eng { color:#111827; font-weight:600; font-size:13px !important; flex:1; line-height:1.6; }
   .write-area { display:flex; flex-direction:column; justify-content:space-evenly; min-height:48px; margin:6px 14px 10px 14px; gap:0; }
   .write-line { flex:1; min-height:22px; }
 
@@ -1257,7 +1262,7 @@ export function render_분석서(data, pageTitle = '') {
 }
 
 // 전체 HTML 생성 (모든 유형 합치기)
-export function renderAllTypes(jsonData, panelImages = [], pageTitle = '리얼고 1학년 26년 1학기 중간고사 대비') {
+export function renderAllTypes(jsonData, panelImages = [], pageTitle = '') {
   return {
     '01_본문노트': render01_본문노트(jsonData, panelImages, pageTitle),
     '03_문장해석': render03_문장해석(jsonData, pageTitle),

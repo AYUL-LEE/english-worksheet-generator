@@ -395,28 +395,24 @@ function generatePreviewHTML(results, passageCount, selectedTypes) {
 }
 
 function printHTML(html) {
-    // iframe을 현재 페이지에 숨겨서 삽입 - 팝업 차단 없이 인쇄
     const iframe = document.createElement('iframe');
     iframe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;border:none;opacity:0;';
     document.body.appendChild(iframe);
     iframe.contentDocument.open();
     iframe.contentDocument.write(html);
     iframe.contentDocument.close();
-    iframe.onload = () => {
+    let printed = false;
+    const doPrint = () => {
+        if (printed) return;
+        printed = true;
         try {
             iframe.contentWindow.focus();
             iframe.contentWindow.print();
         } catch(e) {}
-        setTimeout(() => document.body.removeChild(iframe), 2000);
+        setTimeout(() => { try { document.body.removeChild(iframe); } catch(e) {} }, 3000);
     };
-    // fallback
-    setTimeout(() => {
-        try {
-            iframe.contentWindow.focus();
-            iframe.contentWindow.print();
-        } catch(e) {}
-        setTimeout(() => { try { document.body.removeChild(iframe); } catch(e) {} }, 2000);
-    }, 1000);
+    iframe.onload = doPrint;
+    setTimeout(doPrint, 1200); // onload가 안 오면 fallback
 }
 
 async function downloadPDF() {
@@ -424,7 +420,100 @@ async function downloadPDF() {
         alert('먼저 학습지를 생성해주세요.');
         return;
     }
-    printHTML(generatedHTML);
+    const korTitle = window.lastResult?.debug?.[0]?.rawJSON?.passage?.korean_title
+                  || window.lastResult?.results?.[0]?.passage?.korean_title
+                  || '';
+    const date = new Date().toISOString().slice(0,10);
+    const pdfTitle = korTitle ? `${korTitle}_${date}` : `영어학습지_${date}`;
+
+    const btn = document.getElementById('downloadPdf');
+    const origText = btn.textContent;
+    btn.textContent = 'PDF 생성 중...';
+    btn.disabled = true;
+
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+    try {
+        if (isLocal) {
+            // 로컬: Puppeteer 서버 사이드 PDF
+            const response = await fetch('/api/generate-pdf', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ htmlContent: generatedHTML, title: pdfTitle })
+            });
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error || 'PDF 생성 실패');
+            }
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${pdfTitle}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        } else {
+            // Vercel: 클라이언트 사이드 html2pdf.js
+            await downloadPDFClientSide(generatedHTML, pdfTitle);
+        }
+    } catch (error) {
+        alert('PDF 오류: ' + error.message + '\n\nHTML 다운로드 후 Ctrl+P로 저장하세요.');
+    } finally {
+        btn.textContent = origText;
+        btn.disabled = false;
+    }
+}
+
+async function downloadPDFClientSide(html, filename) {
+    // html2pdf.js 동적 로드
+    if (!window.html2pdf) {
+        await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+
+    // iframe으로 HTML 렌더링 후 캡처
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;top:0;left:0;width:210mm;height:297mm;border:none;opacity:0;pointer-events:none;';
+    document.body.appendChild(iframe);
+
+    await new Promise(resolve => {
+        iframe.onload = resolve;
+        iframe.contentDocument.open();
+        iframe.contentDocument.write(html);
+        iframe.contentDocument.close();
+    });
+
+    // 이미지 로딩 대기 (최대 10초)
+    await new Promise(resolve => {
+        const imgs = Array.from(iframe.contentDocument.querySelectorAll('img'));
+        if (imgs.length === 0) return resolve();
+        let done = 0;
+        const finish = () => { if (++done >= imgs.length) resolve(); };
+        imgs.forEach(img => {
+            if (img.complete) finish();
+            else { img.onload = finish; img.onerror = finish; }
+        });
+        setTimeout(resolve, 10000);
+    });
+
+    const element = iframe.contentDocument.body;
+    const opt = {
+        margin: 0,
+        filename: `${filename}.pdf`,
+        image: { type: 'jpeg', quality: 0.95 },
+        html2canvas: { scale: 2, useCORS: true, allowTaint: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    await window.html2pdf().set(opt).from(element).save();
+    document.body.removeChild(iframe);
 }
 
 // 샘플 PDF 다운로드 (AI 없이, 서버 목업 데이터 사용 → 브라우저 인쇄로 저장)
