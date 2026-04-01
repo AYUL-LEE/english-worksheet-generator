@@ -293,96 +293,67 @@ async function generateWorksheet() {
     
 }
 
+// 각 섹션 HTML에서 <style> 내용 추출
+function extractStyles(fullHtml) {
+  const matches = [...fullHtml.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)];
+  return matches.map(m => m[1]).join('\n');
+}
+
+// 각 섹션 HTML에서 <body> 내용만 추출
+function extractBody(fullHtml) {
+  const m = fullHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  return m ? m[1] : fullHtml;
+}
+
 // 기존 generatePreviewHTML 함수 삭제하고 아래로 교체
 function generatePreviewHTML(results, passageCount, selectedTypes) {
-  const currentDate = new Date().toLocaleDateString('ko-KR');
-  
-  let html = `
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Malgun Gothic', '맑은 고딕', Arial, sans-serif; 
-            background: white;
-        }
-        
-        /* 페이지 구분 */
-        .page-break {
-            page-break-after: always;
-            height: 0;
-            margin: 0;
-            padding: 0;
-        }
-        
-        @media print {
-            @page {
-                size: A4;
-                margin: 0;
-            }
-            .page-break {
-                page-break-after: always;
-            }
-        }
-    </style>
-</head>
-<body>
-`;
+  const sections = [];
 
-  // 지문별로 HTML 삽입
-  const perPassageTypes = [
-    '01_본문노트',
-    '03_문장해석',
-    '08_핵심어휘',
-    '09_한줄해석',
-  ];
-  const workbookTypes = ['워크북_문제'];
+  const perPassageTypes = ['01_본문노트', '03_문장해석', '08_핵심어휘', '09_한줄해석'];
 
-  // 유형 먼저, 지문 순서: 본문노트(지문1→지문2) → 문장해석(지문1→지문2) → ...
   for (let typeIndex = 0; typeIndex < perPassageTypes.length; typeIndex++) {
     const type = perPassageTypes[typeIndex];
     for (let passageIndex = 0; passageIndex < passageCount; passageIndex++) {
-      const key = `${type}_passage${passageIndex}`;
-      const result = results[key];
-      if (result && result.content) {
-        html += result.content;
-        html += '<div class="page-break"></div>';
-      }
+      const result = results[`${type}_passage${passageIndex}`];
+      if (result && result.content) sections.push(result.content);
     }
-    // 핵심어휘 블록 바로 뒤에 단어테스트 삽입
     if (type === '08_핵심어휘') {
-      const dtResult = results['단어테스트'];
-      if (dtResult && dtResult.content) {
-        html += dtResult.content;
-        html += '<div class="page-break"></div>';
-      }
+      const dt = results['단어테스트'];
+      if (dt && dt.content) sections.push(dt.content);
     }
   }
 
-  // 문제워크북: 지문별 통합 1문서 출력
-  for (let passageIndex = 0; passageIndex < passageCount; passageIndex++) {
-    const key = `워크북_문제_passage${passageIndex}`;
-    const result = results[key];
-    if (result && result.content) {
-      html += result.content;
-      html += '<div class="page-break"></div>';
-    }
+  for (let i = 0; i < passageCount; i++) {
+    const r = results[`워크북_문제_passage${i}`];
+    if (r && r.content) sections.push(r.content);
+  }
+  for (let i = 0; i < passageCount; i++) {
+    const r = results[`분석서_passage${i}`];
+    if (r && r.content) sections.push(r.content);
   }
 
-  // 분석서: 지문별 1문서 출력
-  for (let passageIndex = 0; passageIndex < passageCount; passageIndex++) {
-    const key = `분석서_passage${passageIndex}`;
-    const result = results[key];
-    if (result && result.content) {
-      html += result.content;
-      html += '<div class="page-break"></div>';
-    }
-  }
+  // 각 섹션에서 CSS + body 내용 추출 후 단일 HTML로 합치기
+  const allStyles = sections.map(extractStyles).join('\n');
+  const allBodies = sections.map((s, i) =>
+    `<div class="section-page">${extractBody(s)}</div>`
+  ).join('\n<div class="page-break"></div>\n');
 
-  html += `</body></html>`;
-  return html;
+  return `<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:white; }
+.section-page { width:210mm; min-height:297mm; overflow:hidden; }
+.page-break { page-break-after:always; break-after:page; height:0; }
+@page { size:A4; margin:0; }
+${allStyles}
+</style>
+</head>
+<body>
+${allBodies}
+</body></html>`;
 }
 
 function printHTML(html) {
