@@ -22,21 +22,13 @@ export default async function handler(req, res) {
     for (let i = 0; i < passages.length; i++) {
       const passage = passages[i];
       
-      const prompt = `당신은 한국 고등학교 영어 내신 대비 학습자료 제작 전문가입니다.
-다음 영어 지문을 분석하여 학습자료 데이터를 JSON 형태로 출력하세요.
+      // selectedTypes에 따라 필요한 JSON 구조만 동적으로 구성
+      const need기본 = !selectedTypes || selectedTypes.기본워크북;
+      const need문제 = !selectedTypes || selectedTypes.문제워크북;
+      const need분석서 = !selectedTypes || selectedTypes.분석서;
 
-**중요: 반드시 유효한 JSON 형식으로만 응답하세요. 설명이나 추가 텍스트 없이 JSON만 출력하세요.**
-
-# 지문
-${passage}
-
-# 출력 JSON 구조
-{
-  "passage": {
-    "original_text": "원문 전체",
-    "english_title":"흥미롭고 통찰력 있는 영문 제목. 'A: B' 형식으로 작성 (예: 'The Wealth Paradox: Why Abundance Leads to Social Disconnection'). 단순 주제 나열이 아닌 역설, 반전, 질문 형태로 독자의 흥미를 유발할 것",
-    "korean_title": "english title을 번역한 한글 제목"
-    },
+      // 필요한 타입에 따라 JSON 구조 블록 생성
+      const jsonStructure기본 = need기본 ? `
   "type_01_본문노트": {
     "논리흐름": [
       {
@@ -80,7 +72,9 @@ ${passage}
         "korean": "한글 해석"
       }
     ]
-  },
+  },` : '';
+
+      const jsonStructure문제 = need문제 ? `
   "type_워크북_어법선택": {
     "passage_marked": "지문 원문 텍스트 전체를 그대로 쓰되, 고2 내신 필수 어법 포인트마다 번호[정답단어/오답단어] 형식으로 선택지를 삽입. 예시: 'For a species 1[born/bearing] in a time 2[when/which] resources 3[were/was] limited' — 실제 지문 단어를 사용할 것. 절대로 correct, wrong, 정답, 오답 같은 메타 텍스트 금지. 7-9곳을 무작위로 선택."
   },
@@ -125,7 +119,9 @@ ${passage}
       {"num": 5, "A": "단어A5", "B": "단어B5"}
     ],
     "answer": 1
-  },
+  },` : '';
+
+      const jsonStructure분석서 = need분석서 ? `
   "type_분석서": {
     "summary": {
       "korean_summary": "지문 핵심 내용을 2-3줄로 한글 요약",
@@ -152,77 +148,71 @@ ${passage}
         ]
       }
     ]
-  }
-}
+  },` : '';
 
-# 작성 지침
-
-**중요: 반드시 모든 문장을 개별적으로 분리하세요!**
-
+      // 지침 섹션도 필요한 것만 포함
+      const guidelines기본 = need기본 ? `
 1. **문장 분리**: 마침표(.), 물음표(?), 느낌표(!) 기준으로 모든 문장을 개별 분리
    - 예시: 지문에 7개 문장이 있으면 sentences 배열에 7개 객체 필요
 2. **핵심어휘**: 15-20개의 단어로 선정.
 
    ▶ **[STEP 1] 지문 난이도 자동 판별 후 어휘 수준 결정**
-   지문을 분석하여 Lexile 수준을 추정하고, 아래 기준에 따라 핵심어휘·동의어·반의어 수준을 결정하세요:
-
    | 지문 Lexile 수준 | CEFR | 어휘 수준 기준 |
    |---|---|---|
-   | 800L ~ 1000L (고1 평이) | B1~B2 | 고1~2 교과서 수준. 학생이 모를 만한 중급 어휘 선정 (e.g. assess, contribute, consistent) |
-   | 1000L ~ 1200L (고2 일반) | B2 | 고2 수준. 수능 빈출 어휘 위주 (e.g. perceive, prominent, substantial, derive) |
-   | 1200L ~ 1400L (고3 수능) | B2~C1 | 수능 고빈도 학술어휘 (e.g. empirical, nuanced, paradigm, subsequent, hypothesis) |
-   | 1400L ~ 1600L+ (고3 고난도 학술) | C1~C2 | 대학 수학 수준 고급 학술어휘 (e.g. epistemological, proliferate, dichotomy, axiom, mitigate, corroborate) |
+   | 800L ~ 1000L | B1~B2 | 중급 어휘 (e.g. assess, contribute, consistent) |
+   | 1000L ~ 1200L | B2 | 수능 빈출 어휘 (e.g. perceive, prominent, substantial, derive) |
+   | 1200L ~ 1400L | B2~C1 | 수능 고빈도 학술어휘 (e.g. empirical, nuanced, paradigm, subsequent) |
+   | 1400L ~ 1600L+ | C1~C2 | 고급 학술어휘 (e.g. epistemological, proliferate, dichotomy, mitigate) |
 
-   **동의어(synonyms)와 반의어(antonyms)도 반드시 지문과 동일한 난이도 수준의 단어로 구성할 것.**
-   - 지문이 900L이면 synonyms/antonyms도 B1~B2 수준 단어
-   - 지문이 1500L이면 synonyms/antonyms도 C1~C2 수준 고급 학술어휘
-
+   **동의어/반의어도 지문과 동일 난이도 수준으로.**
    ▶ **[STEP 2] 어휘 선정 규칙**
-   - 동사, 명사, 부사, 형용사만 포함 (품사: n./v./adj./adv./phr.)
-   - **숙어(phrasal verb/idiom)도 포함**: 'look forward to'는 하나의 숙어로 처리 (pos: phr.)
-   - **준동사는 동사원형으로**: 지문에 'born'이 있으면 'bear'로, 'running'이 있으면 'run'으로
-   - **중학교 이하 기초단어는 절대 포함 금지**: help, good, bad, make, go, come, think, know, use, give, take, keep, find, say, tell, ask, show, work, study, learn, life, time, year, day, way, place, people, person, thing, also, very, just, only, even, still, well, often, new, old, small, large, high, low, long, short, many, much, few, more, most, same, own, each, other, every, any, some, all, like, right, back, next, then, now
-   - **선택 기준**: 문장해석 페이지의 WORDS & PHRASES 단어장으로 활용 → 지문 난이도에 맞게 학생이 모를 만한 단어 위주로 엄선
-   - meanings: 첫 번째는 반드시 본문 문맥에서 사용된 뜻. 뜻은 1~4개 유동적으로
-   - synonyms: **반드시 3개 이상** — 지문과 동일 난이도 수준의 단어로
-   - antonyms: **반드시 3개 이상** — 지문과 동일 난이도 수준의 단어로
-3. **논리흐름**: 지문의 논리 전개를 2~4단계로 나누어 작성하세요.
-4. **웹툰캡션**: 본문의 핵심 메시지를 함축하는 장면 4개를 DALL-E 이미지 생성용 영문 프롬프트로 작성하세요.
-   - 스타일: "cartoon comic style, bold outlines, simple flat colors"를 각 캡션 앞에 고정으로 붙이세요.
-   - **dialogue(말풍선)는 반드시 영어로만 작성하세요. 한글·한자·일본어 등 비영어 문자 절대 금지. max 8 words.**
-   - 반드시 4개 캡션만 작성하세요.
+   - 동사/명사/부사/형용사/숙어만. 준동사는 동사원형으로.
+   - 중학교 기초단어 제외: help, good, bad, make, go, come, think, know, use 등
+   - meanings: 첫 번째는 본문 문맥 뜻. synonyms/antonyms: **반드시 3개 이상**
+3. **논리흐름**: 지문의 논리 전개를 2~4단계로 나누어 작성.
+4. **웹툰캡션**: dialogue(말풍선)는 반드시 영어로만 (한글·한자·일본어 절대 금지, max 8 words). 4개만.
 
-**다시 강조: type_03, type_09는 sentences 배열에 지문의 모든 문장이 포함되어야 합니다!**
+**type_03, type_09는 sentences 배열에 지문의 모든 문장이 포함되어야 합니다!**` : '';
 
-5. **어법선택 passage_marked**: 고2 내신 필수 어법에서 **반드시 6-8곳** 선택하여 번호[정답단어/오답단어] 형식 삽입.
-   - 적용 어법 유형: 동사/준동사 자리, 수동태/능동태, 5형식 목적격보어 형태, 동사의 수일치, 관계사/접속사 구분, 보어 자리 형용사/부사 구별, 비교급 수일치, 도치 문장 수일치, 대동사 적절성, 가정법 적절성
-   - **반드시 6-8개 포인트 삽입. 절대로 3개 이하로 만들지 말 것.** 각 문장마다 최소 1개씩 찾아 넣을 것.
-   - 대괄호 안은 실제 영어 단어 두 개 (정답 먼저). 메타 텍스트 절대 금지.
-6. **어휘선택 passage_marked**: 고2-3학년 수준 어휘 7-9곳에 번호[정답/반의어] 형식 삽입.
-   - **정답과 오답은 반드시 반의어(antonym) 관계**: tendency↔aversion, abundant↔scarce, cooperate↔compete 등
-   - **목표: 7-9곳 랜덤 선택**
-7. **순서배열**: 지문의 첫 문장은 first_sentence에 고정. 나머지 문장을 2개씩 묶어 chunks 배열 구성.
-   - 2문장씩 묶어서 하나의 label (A, B, C...) 부여
-   - chunks를 랜덤 순서로 섞기
-   - answer 필드에 올바른 순서 (예: "C-A-B")
-8. **삽입**: 지문에서 반전/요지/접속사 시작 문장 하나 선택하여 insert_sentence로 분리.
-   - 남은 지문에 ( ① )~( ⑤ ) 삽입 위치 표시 (총 5곳)
-   - answer는 정답 번호 (1-5 정수)
-9. **빈칸단어**: 지문의 핵심 단어(요지 관련) 하나를 ______으로 교체.
-   - choices[0]이 정답 (answer: 1)
-   - 오답 4개는 같은 품사이나 의미상 맞지 않는 단어
-10. **빈칸문장(구절)**: 지문의 핵심 구절(5-10단어)을 ______으로 교체.
-    - choices[0]이 정답 (answer: 1)
-    - 오답 4개는 비슷한 길이이나 의미상 맞지 않는 구절
-11. **요약**: 지문 전체를 한 문장 영어 요약. (A)와 (B) 두 빈칸.
-    - choices의 정답 번호는 answer 필드에 (1-5 정수)
-    - 오답들은 그럴듯해 보이지만 의미상 맞지 않는 단어 쌍
-12. **분석서**: 지문의 모든 문장에 대해 구문 분석을 작성하세요.
-   - tags: 각 문장에서 2-3개의 핵심 구문 포인트를 태그로 작성 (번호는 chunked_english의 ① ②와 대응)
-   - badges: 서술형 출제 가능성 높은 문장은 ["서술형 출제 가능"], 빈칸 문제로 자주 출제될 문장은 ["빈칸"], 없으면 []
-   - chunked_english: 슬래시(/)로 문장을 의미 단위로 청킹. ①②는 태그 번호와 대응하는 핵심 구문 앞에 붙임. **word**는 핵심 어휘를 bold로 표시
-   - words: 문장에서 지문 난이도에 맞는 핵심 단어만 (동의어/반의어도 동일 난이도 수준으로 구성, 없으면 빈배열)
-   - grammar_points: 해당 문장의 어법 포인트를 1~3개 구체적으로 설명 (학생에게 설명하듯 친절하게)
+      const guidelinesMask문제 = need문제 ? `
+5. **어법선택**: 6-8곳 번호[정답/오답] 형식 삽입. 어법 유형: 동사/준동사, 수동태/능동태, 수일치, 관계사/접속사, 형용사/부사 구별 등.
+6. **어휘선택**: 7-9곳 번호[정답/반의어] 형식. 정답과 오답은 반의어 관계 필수.
+7. **순서배열**: 첫 문장 고정, 나머지 2문장씩 묶어 chunks 구성. chunks를 랜덤 순서로 섞기.
+8. **삽입**: 반전/접속사 시작 문장 하나 선택. 남은 지문에 ①~⑤ 삽입 위치 표시.
+9. **빈칸단어**: 핵심 단어 하나를 ______으로 교체. choices[0]이 정답.
+10. **빈칸문장**: 핵심 구절(5-10단어)을 ______으로 교체. choices[0]이 정답.
+11. **요약**: 한 문장 영어 요약. (A)와 (B) 두 빈칸. choices 정답은 answer 필드에.` : '';
+
+      const guidelines분석서 = need분석서 ? `
+12. **분석서**: 모든 문장에 구문 분석.
+   - tags: 2-3개 핵심 구문 포인트 (번호는 chunked_english의 ①②와 대응)
+   - badges: 서술형 출제 가능 문장은 ["서술형 출제 가능"], 빈칸 문제는 ["빈칸"], 없으면 []
+   - chunked_english: 슬래시(/)로 의미 단위 청킹. **word**는 핵심 어휘 bold
+   - grammar_points: 어법 포인트 1~3개 (학생에게 친절하게 설명)` : '';
+
+      // max_tokens를 선택된 타입에 따라 조정
+      const maxTokens = (need기본 ? 6000 : 0) + (need문제 ? 5000 : 0) + (need분석서 ? 7000 : 0) || 8000;
+
+      const prompt = `당신은 한국 고등학교 영어 내신 대비 학습자료 제작 전문가입니다.
+다음 영어 지문을 분석하여 학습자료 데이터를 JSON 형태로 출력하세요.
+
+**중요: 반드시 유효한 JSON 형식으로만 응답하세요. 설명이나 추가 텍스트 없이 JSON만 출력하세요.**
+
+# 지문
+${passage}
+
+# 출력 JSON 구조
+{
+  "passage": {
+    "original_text": "원문 전체",
+    "english_title":"흥미롭고 통찰력 있는 영문 제목. 'A: B' 형식으로 작성 (예: 'The Wealth Paradox: Why Abundance Leads to Social Disconnection'). 단순 주제 나열이 아닌 역설, 반전, 질문 형태로 독자의 흥미를 유발할 것",
+    "korean_title": "english title을 번역한 한글 제목"
+  },${jsonStructure기본}${jsonStructure문제}${jsonStructure분석서}
+}
+
+# 작성 지침
+**중요: 반드시 모든 문장을 개별적으로 분리하세요!**
+${guidelines기본}${guidelinesMask문제}${guidelines분석서}
 
 JSON만 출력하세요.`;
 
@@ -232,7 +222,7 @@ JSON만 출력하세요.`;
         model: model,
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
-        max_tokens: 16000,
+        max_tokens: maxTokens,
         response_format: { type: 'json_object' },  // 순수 JSON만 출력 강제
       });
 
