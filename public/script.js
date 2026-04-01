@@ -191,16 +191,7 @@ function updatePassageCount() {
     generateBtn.disabled = count === 0 || count > 5;
 }
 function getSelectedTypes() {
-    const safeCheck = (id) => {
-        const element = document.getElementById(id);
-        return element ? element.checked : false;
-    };
-
-    return {
-        기본워크북: safeCheck('기본워크북'),
-        문제워크북: safeCheck('문제워크북'),
-        분석서: safeCheck('분석서'),
-    };
+    return { 기본워크북: true, 문제워크북: false, 분석서: false };
 }
 
 // 지문 파싱
