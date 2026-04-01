@@ -45,14 +45,16 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
     </div>`).join('');
 
   // 4컷 웹툰 섹션 - 개별 패널 + CSS 말풍선
-  // 영어 알파벳/숫자/기본 구두점만 허용 (한글·한자·일본어 등 완전 차단)
-  const stripNonEnglish = (text) => (text || '').replace(/[^\x20-\x7E]/g, '').trim();
   const validPanels = (Array.isArray(panelImages) ? panelImages : []).slice(0, 4);
-  const comicGridHTML = validPanels.length > 0 ? `
+  const isStrip = validPanels.length > 0 && validPanels[0]?.isStrip;
+  const comicGridHTML = isStrip ? `
+  <div class="comic-strip-wrap">
+    <img src="${validPanels[0].url}" alt="4컷 만화" class="comic-strip-img" />
+  </div>` : validPanels.length > 0 ? `
   <div class="comic-grid">
     ${validPanels.map((p, i) => {
-      const dlg = stripNonEnglish(p.dialogue);
-      const scene = stripNonEnglish(typeof p === 'object' ? (p.scene ?? '') : '');
+      const dlg = (p.dialogue || '').trim();
+      const scene = (typeof p === 'object' ? (p.scene ?? '') : '').trim();
       return `
     <div class="comic-panel">
       ${p.svgContent
@@ -104,6 +106,8 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
   .comic-page { margin-top:6px; }
   .comic-section-title { font-size:9.5px !important; font-weight:700; color:#fff; background:#5B8A00; padding:3px 8px; margin-bottom:4px; border-radius:3px; letter-spacing:0.5px; }
   .comic-grid { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:48mm 48mm; gap:2px; width:100%; border:2px solid #1a1a1a; border-radius:4px; overflow:hidden; background:#1a1a1a; }
+  .comic-strip-wrap { width:100%; height:98mm; border:2px solid #1a1a1a; border-radius:4px; overflow:hidden; }
+  .comic-strip-img { width:100%; height:100%; object-fit:cover; display:block; }
   .comic-panel { position:relative; overflow:hidden; background:#f5f5f5; }
   .panel-img { width:100%; height:100%; object-fit:cover; display:block; }
   .panel-svg { width:100%; height:100%; display:block; }

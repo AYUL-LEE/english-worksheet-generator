@@ -22,8 +22,21 @@
                     <input type="text" id="pageTitle" />
                 </div>
                 <div class="input-group">
-                    <label for="apiKey">OpenAI API 키:</label>
+                    <label for="apiKey">OpenAI API 키 <span style="color:#888;font-size:11px;">(텍스트 생성)</span>:</label>
                     <input type="password" id="apiKey" placeholder="sk-..." />
+                </div>
+                <div class="input-group">
+                    <label for="geminiKey">Gemini API 키 <span style="color:#888;font-size:11px;">(만화 이미지, 선택)</span>:</label>
+                    <input type="password" id="geminiKey" placeholder="AIza..." />
+                </div>
+                <div class="input-group">
+                    <label for="model">OpenAI 모델:</label>
+                    <select id="model">
+                        <option value="gpt-4o-mini">gpt-4o-mini (빠름·저렴)</option>
+                        <option value="gpt-4.1-mini">gpt-4.1-mini (빠름·저렴)</option>
+                        <option value="gpt-4o">gpt-4o (고품질)</option>
+                        <option value="gpt-4.1">gpt-4.1 (고품질)</option>
+                    </select>
                 </div>
                 <!-- <div class="input-group">
                     <label for="model">모델 선택:</label>
@@ -118,7 +131,6 @@ Environmental protection is becoming increasingly important..."
             <h2>📄 생성된 학습지</h2>
             <div class="result-actions">
                 <button id="downloadPdf" class="pdf-btn">PDF 다운로드</button>
-                <button id="downloadHtml" class="preview-btn">  HTML 다운로드  </button>
             </div>
             <div id="generationSummary" class="generation-summary"></div>
         </section>

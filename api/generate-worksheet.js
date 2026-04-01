@@ -1,62 +1,159 @@
 import OpenAI from 'openai';
+import { GoogleGenAI } from '@google/genai';
 import { renderAllTypes, render_단어테스트, render_워크북_어법선택, render_워크북_어법수정, render_워크북_어휘선택, render_워크북_순서배열, render_워크북_삽입, render_워크북_빈칸단어, render_워크북_빈칸문장, render_워크북_요약, render_문제워크북, render_분석서 } from '../utils/templateRenderer.js';
 
-// SVG 기반 만화 패널 생성 (API 불필요, 일관된 캐릭터, 즉시 생성)
-function makePanelSVG(dialogue, idx) {
-  const bgs = ['#FFFDE7', '#E3F2FD', '#F1F8E9', '#FCE4EC'];
+// SVG 기반 만화 패널 생성 — 일관된 캐릭터, 스토리 연속성, 큰 말풍선
+function makePanelSVG(panel, idx) {
+  const bgs = ['#FFF9C4', '#FFE0B2', '#B3E5FC', '#C8E6C9'];
+  const groundColors = ['#c8a000', '#b05a00', '#0d5faa', '#2e7d32'];
   const bg = bgs[idx % 4];
-  const clean = (dialogue || '').replace(/[^\x20-\x7E]/g, '').trim();
+  const gc = groundColors[idx % 4];
 
-  // 패널별 표정 (neutral / thinking / surprised / happy)
-  const mouths = [
-    `<path d="M120,134 Q128,139 136,134" stroke="#444" stroke-width="2" fill="none" stroke-linecap="round"/>`,
-    `<path d="M120,136 Q128,132 136,136" stroke="#444" stroke-width="2" fill="none" stroke-linecap="round"/>`,
-    `<ellipse cx="128" cy="135" rx="6" ry="5" fill="none" stroke="#444" stroke-width="2"/>`,
-    `<path d="M116,132 Q128,145 140,132" stroke="#444" stroke-width="2.5" fill="none" stroke-linecap="round"/>`,
-  ];
-  const mouth = mouths[idx % 4];
-
-  // 말풍선 텍스트 줄바꿈
-  const words = clean.split(' ');
-  const lines = [];
-  let cur = '';
-  for (const w of words) {
-    if ((cur + w).length > 22) { lines.push(cur.trim()); cur = w + ' '; }
-    else cur += w + ' ';
+  function esc(s) {
+    return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                   .replace(/[^\x20-\x7E]/g, '').trim().toUpperCase();
   }
-  if (cur.trim()) lines.push(cur.trim());
-  const L = lines.slice(0, 2);
-  const bh = L.length > 1 ? 48 : 32;
+  function wrap(text, maxChars) {
+    const words = text.split(' ');
+    const lines = [];
+    let cur = '';
+    for (const w of words) {
+      if (cur && (cur + ' ' + w).length > maxChars) { lines.push(cur); cur = w; }
+      else cur = cur ? cur + ' ' + w : w;
+    }
+    if (cur) lines.push(cur);
+    return lines;
+  }
 
-  const bubble = clean ? `
-    <rect x="6" y="6" width="200" height="${bh}" rx="10" fill="white" stroke="#2d2d2d" stroke-width="2"/>
-    <polygon points="32,${bh+4} 50,${bh+4} 41,${bh+17}" fill="white" stroke="#2d2d2d" stroke-width="1.5" stroke-linejoin="round"/>
-    ${L.map((l, i) => `<text x="16" y="${22 + i * 17}" font-family="Arial,sans-serif" font-size="11" fill="#222">${l.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</text>`).join('')}` : '';
+  // dialogue 하나를 큰 말풍선으로 자연스럽게 렌더링
+  const dialogue = esc(panel.dialogue || panel.line1 || '');
+  const BW = 148, FS = 17, LH = 23, PAD = 14;
+  const wrappedLines = dialogue ? wrap(dialogue, 10) : [];
+  const bh = wrappedLines.length ? wrappedLines.length * LH + PAD + 8 : 0;
 
-  const svg = `<svg width="256" height="256" xmlns="http://www.w3.org/2000/svg">
-  <rect width="256" height="256" fill="${bg}"/>
-  <rect x="0" y="212" width="256" height="44" fill="#c8ddb0" opacity="0.55"/>
-  <circle cx="128" cy="118" r="32" fill="#FDBCB4" stroke="#2d2d2d" stroke-width="2.5"/>
-  <path d="M96,104 Q102,74 128,72 Q154,74 160,104 Q152,76 128,74 Q104,76 96,104 Z" fill="#1a1a1a"/>
-  <ellipse cx="115" cy="113" rx="7" ry="8.5" fill="white" stroke="#2d2d2d" stroke-width="1.5"/>
-  <ellipse cx="141" cy="113" rx="7" ry="8.5" fill="white" stroke="#2d2d2d" stroke-width="1.5"/>
-  <circle cx="116" cy="114" r="4.5" fill="#1a1a1a"/><circle cx="142" cy="114" r="4.5" fill="#1a1a1a"/>
-  <circle cx="117.5" cy="112" r="1.5" fill="white"/><circle cx="143.5" cy="112" r="1.5" fill="white"/>
-  ${mouth}
-  <rect x="102" y="149" width="52" height="64" fill="#E8EFF8" stroke="#2d2d2d" stroke-width="2" rx="4"/>
-  <line x1="128" y1="149" x2="120" y2="172" stroke="#2d2d2d" stroke-width="1.5"/>
-  <line x1="128" y1="149" x2="136" y2="172" stroke="#2d2d2d" stroke-width="1.5"/>
-  <line x1="102" y1="161" x2="76" y2="190" stroke="#FDBCB4" stroke-width="9" stroke-linecap="round"/>
-  <line x1="154" y1="161" x2="180" y2="190" stroke="#FDBCB4" stroke-width="9" stroke-linecap="round"/>
-  <rect x="108" y="211" width="18" height="30" fill="#334155" stroke="#2d2d2d" stroke-width="1.5" rx="2"/>
-  <rect x="130" y="211" width="18" height="30" fill="#334155" stroke="#2d2d2d" stroke-width="1.5" rx="2"/>
-  <ellipse cx="117" cy="243" rx="13" ry="7" fill="#111"/><ellipse cx="139" cy="243" rx="13" ry="7" fill="#111"/>
+  // 패널별 표정/포즈
+  const emotions = ['happy', 'neutral', 'sad', 'smile'];
+  const emotion = emotions[idx % 4];
+  const mouthSVG = {
+    happy:   `<path d="M199,145 Q210,157 221,145" stroke="#222" stroke-width="2.5" fill="none" stroke-linecap="round"/>`,
+    neutral: `<path d="M200,148 Q210,151 220,148" stroke="#222" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+    sad:     `<path d="M200,151 Q210,142 220,151" stroke="#222" stroke-width="2.5" fill="none" stroke-linecap="round"/>`,
+    smile:   `<path d="M197,144 Q210,159 223,144" stroke="#222" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+  };
+  const hoodieColors = { happy:'#4A90D9', neutral:'#5B8A50', sad:'#7B5EA7', smile:'#D9534F' };
+  const hoodieColor = hoodieColors[emotion];
+  const armsSVG = {
+    happy:   `<line x1="186" y1="176" x2="160" y2="202" stroke="#FDBCB4" stroke-width="12" stroke-linecap="round"/>
+              <line x1="234" y1="176" x2="258" y2="198" stroke="#FDBCB4" stroke-width="12" stroke-linecap="round"/>`,
+    neutral: `<line x1="186" y1="176" x2="168" y2="213" stroke="#FDBCB4" stroke-width="12" stroke-linecap="round"/>
+              <line x1="234" y1="176" x2="252" y2="213" stroke="#FDBCB4" stroke-width="12" stroke-linecap="round"/>`,
+    sad:     `<line x1="186" y1="176" x2="172" y2="215" stroke="#FDBCB4" stroke-width="12" stroke-linecap="round"/>
+              <line x1="234" y1="176" x2="248" y2="215" stroke="#FDBCB4" stroke-width="12" stroke-linecap="round"/>`,
+    smile:   `<line x1="186" y1="176" x2="157" y2="200" stroke="#FDBCB4" stroke-width="12" stroke-linecap="round"/>
+              <line x1="234" y1="176" x2="261" y2="200" stroke="#FDBCB4" stroke-width="12" stroke-linecap="round"/>`,
+  };
+
+  const bubbleY = 8;
+  const tailY = bubbleY + bh / 2;
+  const bubble = bh > 0 ? `
+  <rect x="5" y="${bubbleY}" width="${BW}" height="${bh}" rx="13" fill="white" stroke="#222" stroke-width="2.5"/>
+  <polygon points="${BW-2},${tailY-7} ${BW+18},${tailY+4} ${BW-2},${tailY+11}" fill="white" stroke="#222" stroke-width="2" stroke-linejoin="round"/>
+  ${wrappedLines.map((l, i) => `<text x="${5 + BW/2}" y="${bubbleY + PAD/2 + LH*(i+1) - 1}" text-anchor="middle" font-family="Arial Black,Impact,sans-serif" font-size="${FS}" font-weight="900" fill="#111">${l}</text>`).join('')}` : '';
+
+  return `<svg width="280" height="280" xmlns="http://www.w3.org/2000/svg">
+  <rect width="280" height="280" fill="${bg}"/>
+  <rect x="0" y="238" width="280" height="42" fill="${gc}" opacity="0.35"/>
+  <!-- Ears -->
+  <ellipse cx="181" cy="130" rx="7" ry="9" fill="#FDBCB4" stroke="#222" stroke-width="1.5"/>
+  <ellipse cx="239" cy="130" rx="7" ry="9" fill="#FDBCB4" stroke="#222" stroke-width="1.5"/>
+  <!-- Head -->
+  <circle cx="210" cy="128" r="31" fill="#FDBCB4" stroke="#222" stroke-width="2.5"/>
+  <!-- Hair -->
+  <path d="M180,120 Q185,90 210,88 Q235,90 240,120 Q228,94 210,93 Q192,94 180,120 Z" fill="#4A2C0A"/>
+  <ellipse cx="210" cy="103" rx="28" ry="15" fill="#4A2C0A"/>
+  <!-- Eyes -->
+  <ellipse cx="199" cy="125" rx="7.5" ry="9" fill="white" stroke="#222" stroke-width="1.5"/>
+  <ellipse cx="221" cy="125" rx="7.5" ry="9" fill="white" stroke="#222" stroke-width="1.5"/>
+  <circle cx="200" cy="126" r="4.5" fill="#111"/>
+  <circle cx="222" cy="126" r="4.5" fill="#111"/>
+  <circle cx="201.5" cy="124" r="1.8" fill="white"/>
+  <circle cx="223.5" cy="124" r="1.8" fill="white"/>
+  <!-- Eyebrows -->
+  <path d="M192,114 Q199,110 206,113" stroke="#4A2C0A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M214,113 Q221,110 228,114" stroke="#4A2C0A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  ${mouthSVG[emotion]}
+  <!-- Hoodie body -->
+  <rect x="185" y="158" width="50" height="60" fill="${hoodieColor}" rx="5" stroke="#222" stroke-width="2"/>
+  <rect x="198" y="188" width="24" height="17" fill="${hoodieColor}" stroke="#222" stroke-width="1.5" rx="3" opacity="0.65"/>
+  ${armsSVG[emotion]}
+  <!-- Legs -->
+  <rect x="193" y="216" width="17" height="42" fill="#1a2744" rx="3" stroke="#222" stroke-width="1.5"/>
+  <rect x="212" y="216" width="17" height="42" fill="#1a2744" rx="3" stroke="#222" stroke-width="1.5"/>
+  <!-- Shoes -->
+  <ellipse cx="201" cy="260" rx="15" ry="7" fill="#111"/>
+  <ellipse cx="220" cy="260" rx="15" ry="7" fill="#111"/>
   ${bubble}
-  <circle cx="236" cy="236" r="14" fill="#5B8A00"/>
-  <text x="236" y="241" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold" fill="white">${idx + 1}</text>
-  </svg>`;
+  <!-- Panel number -->
+  <circle cx="265" cy="265" r="13" fill="#1a73e8"/>
+  <text x="265" y="270" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="white">${idx+1}</text>
+</svg>`;
+}
 
-  return svg; // 인라인 SVG 문자열 반환
+const IMAGE_MODELS = ['gemini-2.5-flash-image', 'gemini-3.1-flash-image-preview'];
+
+// 4컷 만화를 단일 이미지로 한 번에 생성
+async function generateComicStrip(imageAI, captions, storyContexts) {
+  const panels = captions.slice(0, 4).map((p, i) => {
+    const obj = typeof p === 'object' ? p : { dialogue: String(p) };
+    return {
+      scene: obj.scene || obj.line1 || `Panel ${i + 1}`,
+      dialogue: obj.dialogue || obj.line1 || '',
+      context: storyContexts[i] || `Panel ${i + 1} of 4`,
+    };
+  });
+
+  const prompt = `Create a COMPLETE 4-panel educational comic strip as a SINGLE IMAGE in a 2×2 grid layout.
+
+CHARACTER: A young high school student with short dark spiky hair, wearing a blue hoodie — the EXACT SAME character in all 4 panels.
+
+Panel 1 (top-left) — ${panels[0]?.context}: ${panels[0]?.scene}
+  → Speech bubble: "${panels[0]?.dialogue}"
+
+Panel 2 (top-right) — ${panels[1]?.context}: ${panels[1]?.scene}
+  → Speech bubble: "${panels[1]?.dialogue}"
+
+Panel 3 (bottom-left) — ${panels[2]?.context}: ${panels[2]?.scene}
+  → Speech bubble: "${panels[2]?.dialogue}"
+
+Panel 4 (bottom-right) — ${panels[3]?.context}: ${panels[3]?.scene}
+  → Speech bubble: "${panels[3]?.dialogue}"
+
+STYLE:
+- Vibrant cartoon/webtoon style, thick black panel borders dividing the 2×2 grid
+- Each panel has a colorful background matching its scene
+- Speech bubbles with LARGE, BOLD, clearly readable English text
+- Consistent character design across all 4 panels
+- NO Korean characters anywhere`;
+
+  for (const modelName of IMAGE_MODELS) {
+    try {
+      const response = await imageAI.models.generateContent({
+        model: modelName,
+        contents: prompt,
+        config: { responseModalities: ['IMAGE'] },
+      });
+      const parts = response.candidates?.[0]?.content?.parts || [];
+      const imgPart = parts.find(p => p.inlineData?.mimeType);
+      if (imgPart) {
+        console.log(`🎨 4컷 만화 스트립 생성 완료 — 모델: ${modelName}`);
+        return `data:${imgPart.inlineData.mimeType};base64,${imgPart.inlineData.data}`;
+      }
+    } catch (err) {
+      console.warn(`  ↳ ${modelName} 실패: ${err.message.slice(0, 120)}`);
+    }
+  }
+  console.warn('⚠️ 4컷 스트립 생성 실패 — SVG 폴백');
+  return null;
 }
 
 export default async function handler(req, res) {
@@ -64,7 +161,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { passages, apiKey, model, selectedTypes, pageTitle = '' } = req.body;
+  const { passages, apiKey, geminiKey, model, selectedTypes, pageTitle = '' } = req.body;
 
   if (!apiKey || !passages || passages.length === 0) {
     return res.status(400).json({ error: '필수 입력값이 없습니다.' });
@@ -72,6 +169,7 @@ export default async function handler(req, res) {
 
   try {
     const openai = new OpenAI({ apiKey });
+    const imageAI = geminiKey ? new GoogleGenAI({ apiKey: geminiKey }) : null;
     const allResults = {};
     const allPassagesData = [];
     const debugInfo = [];
@@ -95,10 +193,10 @@ export default async function handler(req, res) {
       }
     ],
     "웹툰캡션": [
-      {"scene": "Panel 1 scene description in English (what to draw, no text, no written words)", "dialogue": "ENGLISH ONLY (max 8 words, NO Korean, NO Chinese, NO Japanese characters)"},
-      {"scene": "Panel 2 scene description in English (what to draw, no text, no written words)", "dialogue": "ENGLISH ONLY (max 8 words, NO Korean, NO Chinese, NO Japanese characters)"},
-      {"scene": "Panel 3 scene description in English (what to draw, no text, no written words)", "dialogue": "ENGLISH ONLY (max 8 words, NO Korean, NO Chinese, NO Japanese characters)"},
-      {"scene": "Panel 4 scene description in English (what to draw, no text, no written words)", "dialogue": "ENGLISH ONLY (max 8 words, NO Korean, NO Chinese, NO Japanese characters)"}
+      {"scene": "Panel 1: Vivid scene description for Gemini image generation — characters, setting, action, emotion. English only.", "dialogue": "What the character says or thinks in this panel (English, natural speech, max 10 words)"},
+      {"scene": "Panel 2: Vivid scene description continuing the story. Same character. English only.", "dialogue": "Character's speech/thought for panel 2 (English, max 10 words)"},
+      {"scene": "Panel 3: Vivid scene description with story twist. Same character. English only.", "dialogue": "Character's speech/thought for panel 3 (English, max 10 words)"},
+      {"scene": "Panel 4: Vivid scene description with story resolution. Same character. English only.", "dialogue": "Character's speech/thought for panel 4 (English, max 10 words)"}
     ]
   },
   "type_03_문장해석": {
@@ -228,7 +326,10 @@ export default async function handler(req, res) {
    - 중학교 기초단어 제외: help, good, bad, make, go, come, think, know, use 등
    - meanings: 첫 번째는 본문 문맥 뜻. synonyms: **2개**, antonyms: **2개**
 3. **논리흐름**: 지문의 논리 전개를 2~4단계로 나누어 작성.
-4. **웹툰캡션**: dialogue(말풍선)는 반드시 영어로만 (한글·한자·일본어 절대 금지, max 8 words). 4개만.
+4. **웹툰캡션**: 4패널이 지문 핵심 내용을 하나의 스토리로 전개 (도입→전개→전환→결론). Gemini 이미지 생성 AI에게 전달할 프롬프트.
+   - scene: 이미지 생성용 장면 묘사 — 캐릭터, 배경, 행동, 감정을 구체적으로 (영어만, 1-2문장)
+   - dialogue: 말풍선 텍스트 — 자연스러운 영어 (한글·한자·일본어 절대 금지, max 10 words)
+   - 4개 패널이 하나의 이야기처럼 연결되어야 함
 
 **type_03, type_09는 sentences 배열에 지문의 모든 문장이 포함되어야 합니다!**` : '';
 
@@ -281,15 +382,20 @@ JSON만 출력하세요.`;
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
         max_tokens: maxTokens,
-        response_format: { type: 'json_object' },  // 순수 JSON만 출력 강제
+        response_format: { type: 'json_object' },
       });
 
       let jsonText = completion.choices[0].message.content.trim();
 
-      // 응답이 잘렸는지 확인
       const finishReason = completion.choices[0].finish_reason;
+      const fakeUsage = {
+        prompt_tokens: completion.usage.prompt_tokens,
+        completion_tokens: completion.usage.completion_tokens,
+        total_tokens: completion.usage.total_tokens,
+      };
+
       console.log('=== GPT 응답 ===');
-      console.log('토큰:', completion.usage);
+      console.log('토큰:', fakeUsage);
       console.log('finish_reason:', finishReason);
       console.log('응답 길이:', jsonText.length);
       if (finishReason === 'length') {
@@ -325,7 +431,7 @@ JSON만 출력하세요.`;
               success: false,
               error: 'JSON 파싱 실패: ' + e2.message,
               rawResponse: jsonText.substring(0, 2000),
-              tokenUsage: completion.usage,
+              tokenUsage: fakeUsage,
               finishReason,
             });
           }
@@ -334,7 +440,7 @@ JSON만 출력하세요.`;
             success: false,
             error: 'JSON 파싱 실패: ' + parseError.message,
             rawResponse: jsonText.substring(0, 2000),
-            tokenUsage: completion.usage,
+            tokenUsage: fakeUsage,
             finishReason,
           });
         }
@@ -343,10 +449,10 @@ JSON만 출력하세요.`;
       // 디버깅 정보 저장
       debugInfo.push({
         passageIndex: i,
-        tokenUsage: completion.usage,
-        promptTokens: completion.usage.prompt_tokens,
-        completionTokens: completion.usage.completion_tokens,
-        totalTokens: completion.usage.total_tokens,
+        tokenUsage: fakeUsage,
+        promptTokens: fakeUsage.prompt_tokens,
+        completionTokens: fakeUsage.completion_tokens,
+        totalTokens: fakeUsage.total_tokens,
         rawJSON: jsonData,
         sentenceCount: {
           type_02: jsonData.type_02_본문노트_직독직해?.sentences?.length || 0,
@@ -355,18 +461,39 @@ JSON만 출력하세요.`;
         }
       });
 
-      console.log(`✅ 지문 ${i+1} 완료 - 토큰: ${completion.usage.total_tokens}`);
+      console.log(`✅ 지문 ${i+1} 완료 - 토큰: ${fakeUsage.total_tokens}`);
 
       // SVG 기반 4컷 만화 패널 생성 (DALL-E 없이 서버에서 직접 생성)
       // base64 data URL로 변환 → html2canvas가 <img>로 안정적으로 렌더링
       const captions = jsonData.type_01_본문노트?.웹툰캡션 ?? [];
-      const panelImages = captions.slice(0, 4).map((panel, idx) => {
-        const dialogue = typeof panel === 'object' ? (panel.dialogue ?? '') : '';
-        const svgStr = makePanelSVG(dialogue, idx);
-        const url = `data:image/svg+xml;base64,${Buffer.from(svgStr).toString('base64')}`;
-        return { svgContent: null, url, dialogue };
-      });
-      console.log(`🎨 SVG 웹툰 패널 ${panelImages.length}/4 생성 완료`);
+      const storyContexts = [
+        `Panel 1/4 - Story introduction: ${jsonData.type_01_본문노트?.논리흐름?.[0]?.소제목 || 'Story begins'}`,
+        `Panel 2/4 - Story development: ${jsonData.type_01_본문노트?.논리흐름?.[1]?.소제목 || 'Story develops'}`,
+        `Panel 3/4 - Story twist: ${jsonData.type_01_본문노트?.논리흐름?.[2]?.소제목 || 'Story turns'}`,
+        `Panel 4/4 - Story resolution: conclusion`,
+      ];
+      let panelImages;
+      if (imageAI) {
+        const stripUrl = await generateComicStrip(imageAI, captions, storyContexts);
+        if (stripUrl) {
+          // 단일 이미지로 4컷 전체 표시
+          panelImages = [{ svgContent: null, url: stripUrl, dialogue: '', isStrip: true }];
+        } else {
+          // 스트립 실패 시 SVG 폴백
+          panelImages = captions.slice(0, 4).map((panel, pi) => {
+            const panelObj = typeof panel === 'object' ? panel : { dialogue: String(panel) };
+            const dialogue = panelObj.dialogue || panelObj.line1 || '';
+            return { svgContent: null, url: `data:image/svg+xml;base64,${Buffer.from(makePanelSVG({ dialogue }, pi)).toString('base64')}`, dialogue };
+          });
+        }
+      } else {
+        panelImages = captions.slice(0, 4).map((panel, pi) => {
+          const panelObj = typeof panel === 'object' ? panel : { dialogue: String(panel) };
+          const dialogue = panelObj.dialogue || panelObj.line1 || '';
+          return { svgContent: null, url: `data:image/svg+xml;base64,${Buffer.from(makePanelSVG({ dialogue }, pi)).toString('base64')}`, dialogue };
+        });
+      }
+      console.log(`🎨 Gemini 웹툰 패널 ${panelImages.length}/4 생성 완료`);
 
       // JSON → HTML 변환 (기본워크북 선택시에만)
       const htmlResults = (!selectedTypes || selectedTypes.기본워크북)

@@ -211,7 +211,8 @@ function parsePassages() {
 async function generateWorksheet() {
     const apiKey = document.getElementById('apiKey').value.trim();
     const pageTitle = document.getElementById('pageTitle')?.value.trim() || '리얼고 1학년 26년 1학기 중간고사 대비';
-    const model = "gpt-4o-mini"; // ✅ 항상 고정
+    const geminiKey = document.getElementById('geminiKey')?.value.trim() || '';
+    const model = document.getElementById('model')?.value || 'gpt-4o-mini';
     const passages = parsePassages();
     const selectedTypes = getSelectedTypes();
     
@@ -244,6 +245,7 @@ async function generateWorksheet() {
             body: JSON.stringify({
                 passages,
                 apiKey,
+                geminiKey,
                 model,
                 selectedTypes,
                 pageTitle
@@ -561,13 +563,17 @@ function deselectAll() {
 // 설정 저장/로드
 function loadSavedSettings() {
     const savedApiKey = localStorage.getItem('openai_api_key');
+    const savedGeminiKey = localStorage.getItem('gemini_api_key');
     const savedModel = localStorage.getItem('selected_model');
-    
+
     if (savedApiKey) {
         const apiKeyElement = document.getElementById('apiKey');
         if (apiKeyElement) apiKeyElement.value = savedApiKey;
     }
-    
+    if (savedGeminiKey) {
+        const geminiKeyElement = document.getElementById('geminiKey');
+        if (geminiKeyElement) geminiKeyElement.value = savedGeminiKey;
+    }
     if (savedModel) {
         const modelElement = document.getElementById('model');
         if (modelElement) modelElement.value = savedModel;
@@ -576,30 +582,31 @@ function loadSavedSettings() {
 
 function saveSettings() {
     const apiKeyElement = document.getElementById('apiKey');
+    const geminiKeyElement = document.getElementById('geminiKey');
     const modelElement = document.getElementById('model');
-    
+
     const apiKey = apiKeyElement ? apiKeyElement.value.trim() : '';
+    const geminiKey = geminiKeyElement ? geminiKeyElement.value.trim() : '';
     const model = modelElement ? modelElement.value : '';
-    
-    if (apiKey) {
-        localStorage.setItem('openai_api_key', apiKey);
-    }
-    if (model) {
-        localStorage.setItem('selected_model', model);
-    }
+
+    if (apiKey) localStorage.setItem('openai_api_key', apiKey);
+    if (geminiKey) localStorage.setItem('gemini_api_key', geminiKey);
+    if (model) localStorage.setItem('selected_model', model);
 }
 
 // 입력 검증 함수
 function validateInputs() {
     const apiKeyElement = document.getElementById('apiKey');
+    const geminiKeyElement = document.getElementById('geminiKey');
     const apiKey = apiKeyElement ? apiKeyElement.value.trim() : '';
+    const geminiKey = geminiKeyElement ? geminiKeyElement.value.trim() : '';
     const passages = parsePassages();
     const selectedTypes = getSelectedTypes();
-    
+
     const errors = [];
-    
+
     if (!apiKey) {
-        errors.push('API 키를 입력해주세요.');
+        errors.push('OpenAI API 키를 입력해주세요.');
     }
     
     if (passages.length === 0) {
@@ -660,6 +667,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (apiKeyElement) {
         apiKeyElement.addEventListener('blur', saveSettings);
+    }
+    const geminiKeyElement = document.getElementById('geminiKey');
+    if (geminiKeyElement) {
+        geminiKeyElement.addEventListener('blur', saveSettings);
     }
     if (modelElement) {
         modelElement.addEventListener('change', saveSettings);
