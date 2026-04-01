@@ -56,7 +56,7 @@ function makePanelSVG(dialogue, idx) {
   <text x="236" y="241" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold" fill="white">${idx + 1}</text>
   </svg>`;
 
-  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+  return svg; // 인라인 SVG 문자열 반환
 }
 
 export default async function handler(req, res) {
@@ -361,7 +361,7 @@ JSON만 출력하세요.`;
       const captions = jsonData.type_01_본문노트?.웹툰캡션 ?? [];
       const panelImages = captions.slice(0, 4).map((panel, idx) => {
         const dialogue = typeof panel === 'object' ? (panel.dialogue ?? '') : '';
-        return { url: makePanelSVG(dialogue, idx), dialogue };
+        return { svgContent: makePanelSVG(dialogue, idx), url: null, dialogue };
       });
       console.log(`🎨 SVG 웹툰 패널 ${panelImages.length}/4 생성 완료`);
 

@@ -55,9 +55,11 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
       const scene = stripNonEnglish(typeof p === 'object' ? (p.scene ?? '') : '');
       return `
     <div class="comic-panel">
-      ${p.url
-        ? `<img src="${p.url}" alt="Panel ${i+1}" class="panel-img" />`
-        : `<div class="panel-placeholder">${scene ? `<div class="panel-scene-text">${scene}</div>` : ''}</div>`}
+      ${p.svgContent
+        ? `<div class="panel-svg">${p.svgContent}</div>`
+        : p.url
+          ? `<img src="${p.url}" alt="Panel ${i+1}" class="panel-img" />`
+          : `<div class="panel-placeholder">${scene ? `<div class="panel-scene-text">${scene}</div>` : ''}</div>`}
       <div class="panel-num">${i + 1}</div>
       ${dlg ? `<div class="speech-bubble">${dlg}</div>` : ''}
     </div>`;
@@ -104,6 +106,8 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
   .comic-grid { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:48mm 48mm; gap:2px; width:100%; border:2px solid #1a1a1a; border-radius:4px; overflow:hidden; background:#1a1a1a; }
   .comic-panel { position:relative; overflow:hidden; background:#f5f5f5; }
   .panel-img { width:100%; height:100%; object-fit:cover; display:block; }
+  .panel-svg { width:100%; height:100%; display:block; }
+  .panel-svg svg { width:100%; height:100%; display:block; }
   .panel-placeholder { width:100%; height:100%; background:#f0f0f0; display:flex; align-items:center; justify-content:center; padding:8px; }
   .panel-scene-text { font-size:7px !important; color:#555; text-align:center; line-height:1.4; font-style:italic; }
   .panel-num { position:absolute; top:5px; left:5px; background:#5B8A00; color:#fff; width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:8px !important; font-weight:700; z-index:10; }
