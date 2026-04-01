@@ -358,10 +358,13 @@ JSON만 출력하세요.`;
       console.log(`✅ 지문 ${i+1} 완료 - 토큰: ${completion.usage.total_tokens}`);
 
       // SVG 기반 4컷 만화 패널 생성 (DALL-E 없이 서버에서 직접 생성)
+      // base64 data URL로 변환 → html2canvas가 <img>로 안정적으로 렌더링
       const captions = jsonData.type_01_본문노트?.웹툰캡션 ?? [];
       const panelImages = captions.slice(0, 4).map((panel, idx) => {
         const dialogue = typeof panel === 'object' ? (panel.dialogue ?? '') : '';
-        return { svgContent: makePanelSVG(dialogue, idx), url: null, dialogue };
+        const svgStr = makePanelSVG(dialogue, idx);
+        const url = `data:image/svg+xml;base64,${Buffer.from(svgStr).toString('base64')}`;
+        return { svgContent: null, url, dialogue };
       });
       console.log(`🎨 SVG 웹툰 패널 ${panelImages.length}/4 생성 완료`);
 
