@@ -1,6 +1,64 @@
 import OpenAI from 'openai';
 import { renderAllTypes, render_단어테스트, render_워크북_어법선택, render_워크북_어법수정, render_워크북_어휘선택, render_워크북_순서배열, render_워크북_삽입, render_워크북_빈칸단어, render_워크북_빈칸문장, render_워크북_요약, render_문제워크북, render_분석서 } from '../utils/templateRenderer.js';
 
+// SVG 기반 만화 패널 생성 (API 불필요, 일관된 캐릭터, 즉시 생성)
+function makePanelSVG(dialogue, idx) {
+  const bgs = ['#FFFDE7', '#E3F2FD', '#F1F8E9', '#FCE4EC'];
+  const bg = bgs[idx % 4];
+  const clean = (dialogue || '').replace(/[^\x20-\x7E]/g, '').trim();
+
+  // 패널별 표정 (neutral / thinking / surprised / happy)
+  const mouths = [
+    `<path d="M120,134 Q128,139 136,134" stroke="#444" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+    `<path d="M120,136 Q128,132 136,136" stroke="#444" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+    `<ellipse cx="128" cy="135" rx="6" ry="5" fill="none" stroke="#444" stroke-width="2"/>`,
+    `<path d="M116,132 Q128,145 140,132" stroke="#444" stroke-width="2.5" fill="none" stroke-linecap="round"/>`,
+  ];
+  const mouth = mouths[idx % 4];
+
+  // 말풍선 텍스트 줄바꿈
+  const words = clean.split(' ');
+  const lines = [];
+  let cur = '';
+  for (const w of words) {
+    if ((cur + w).length > 22) { lines.push(cur.trim()); cur = w + ' '; }
+    else cur += w + ' ';
+  }
+  if (cur.trim()) lines.push(cur.trim());
+  const L = lines.slice(0, 2);
+  const bh = L.length > 1 ? 48 : 32;
+
+  const bubble = clean ? `
+    <rect x="6" y="6" width="200" height="${bh}" rx="10" fill="white" stroke="#2d2d2d" stroke-width="2"/>
+    <polygon points="32,${bh+4} 50,${bh+4} 41,${bh+17}" fill="white" stroke="#2d2d2d" stroke-width="1.5" stroke-linejoin="round"/>
+    ${L.map((l, i) => `<text x="16" y="${22 + i * 17}" font-family="Arial,sans-serif" font-size="11" fill="#222">${l.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</text>`).join('')}` : '';
+
+  const svg = `<svg width="256" height="256" xmlns="http://www.w3.org/2000/svg">
+  <rect width="256" height="256" fill="${bg}"/>
+  <rect x="0" y="212" width="256" height="44" fill="#c8ddb0" opacity="0.55"/>
+  <circle cx="128" cy="118" r="32" fill="#FDBCB4" stroke="#2d2d2d" stroke-width="2.5"/>
+  <path d="M96,104 Q102,74 128,72 Q154,74 160,104 Q152,76 128,74 Q104,76 96,104 Z" fill="#1a1a1a"/>
+  <ellipse cx="115" cy="113" rx="7" ry="8.5" fill="white" stroke="#2d2d2d" stroke-width="1.5"/>
+  <ellipse cx="141" cy="113" rx="7" ry="8.5" fill="white" stroke="#2d2d2d" stroke-width="1.5"/>
+  <circle cx="116" cy="114" r="4.5" fill="#1a1a1a"/><circle cx="142" cy="114" r="4.5" fill="#1a1a1a"/>
+  <circle cx="117.5" cy="112" r="1.5" fill="white"/><circle cx="143.5" cy="112" r="1.5" fill="white"/>
+  ${mouth}
+  <rect x="102" y="149" width="52" height="64" fill="#E8EFF8" stroke="#2d2d2d" stroke-width="2" rx="4"/>
+  <line x1="128" y1="149" x2="120" y2="172" stroke="#2d2d2d" stroke-width="1.5"/>
+  <line x1="128" y1="149" x2="136" y2="172" stroke="#2d2d2d" stroke-width="1.5"/>
+  <line x1="102" y1="161" x2="76" y2="190" stroke="#FDBCB4" stroke-width="9" stroke-linecap="round"/>
+  <line x1="154" y1="161" x2="180" y2="190" stroke="#FDBCB4" stroke-width="9" stroke-linecap="round"/>
+  <rect x="108" y="211" width="18" height="30" fill="#334155" stroke="#2d2d2d" stroke-width="1.5" rx="2"/>
+  <rect x="130" y="211" width="18" height="30" fill="#334155" stroke="#2d2d2d" stroke-width="1.5" rx="2"/>
+  <ellipse cx="117" cy="243" rx="13" ry="7" fill="#111"/><ellipse cx="139" cy="243" rx="13" ry="7" fill="#111"/>
+  ${bubble}
+  <circle cx="236" cy="236" r="14" fill="#5B8A00"/>
+  <text x="236" y="241" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold" fill="white">${idx + 1}</text>
+  </svg>`;
+
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -299,44 +357,13 @@ JSON만 출력하세요.`;
 
       console.log(`✅ 지문 ${i+1} 완료 - 토큰: ${completion.usage.total_tokens}`);
 
-      // DALL-E 3 4컷 웹툰 이미지 - 패널별 개별 생성 (병렬)
-      let panelImages = [];
-      try {
-        const captions = jsonData.type_01_본문노트?.웹툰캡션 ?? [];
-
-        // DALL-E 2로 빠르게 생성 (Vercel/로컬 모두 동일)
-        // 캐릭터 일관성: 동일한 캐릭터 설명을 모든 패널에 고정
-        const CHARACTER = 'Korean teenage male student, short black hair, round face, big eyes, white school uniform, simple cartoon style';
-        panelImages = await Promise.all(
-          captions.slice(0, 4).map(async (panel, idx) => {
-            const scene = typeof panel === 'string' ? panel : (panel.scene ?? panel);
-            const dialogue = typeof panel === 'object' ? (panel.dialogue ?? '') : '';
-
-            const prompt = `Simple cartoon comic panel. ${CHARACTER}. Scene: ${scene}. Flat colors, bold black outlines, no text, no speech bubbles, no written words anywhere. Clean illustration only.`;
-
-            try {
-              const resp = await openai.images.generate({
-                model: 'dall-e-2',
-                prompt,
-                n: 1,
-                size: '256x256',
-              });
-              const imgUrl = resp.data[0].url;
-              // CORS 차단 방지: base64 data URL로 변환
-              const imgResp = await fetch(imgUrl);
-              const buf = await imgResp.arrayBuffer();
-              const b64 = Buffer.from(buf).toString('base64');
-              return { url: `data:image/png;base64,${b64}`, dialogue };
-            } catch (e) {
-              console.error(`패널 ${idx + 1} 생성 실패:`, e.message);
-              return { url: null, dialogue };
-            }
-          })
-        );
-        console.log(`🎨 웹툰 패널 ${panelImages.filter(p => p.url).length}/4 생성 완료`);
-      } catch (imgError) {
-        console.error('이미지 생성 실패:', imgError.message);
-      }
+      // SVG 기반 4컷 만화 패널 생성 (DALL-E 없이 서버에서 직접 생성)
+      const captions = jsonData.type_01_본문노트?.웹툰캡션 ?? [];
+      const panelImages = captions.slice(0, 4).map((panel, idx) => {
+        const dialogue = typeof panel === 'object' ? (panel.dialogue ?? '') : '';
+        return { url: makePanelSVG(dialogue, idx), dialogue };
+      });
+      console.log(`🎨 SVG 웹툰 패널 ${panelImages.length}/4 생성 완료`);
 
       // JSON → HTML 변환 (기본워크북 선택시에만)
       const htmlResults = (!selectedTypes || selectedTypes.기본워크북)
