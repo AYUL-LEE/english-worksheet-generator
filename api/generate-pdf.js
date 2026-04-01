@@ -47,7 +47,11 @@ export default async function handler(req, res) {
     const cleanedHTML = htmlContent.replace(
       /<link[^>]*fonts\.googleapis\.com[^>]*>/gi, ''
     );
-    await page.setContent(cleanedHTML, {
+
+    // 대용량 HTML(base64 이미지 포함)은 setContent 대신 임시 파일 → goto로 로드
+    const tmpHtmlPath = path.join(os.tmpdir(), `worksheet_${timestamp}.html`);
+    fs.writeFileSync(tmpHtmlPath, cleanedHTML, 'utf-8');
+    await page.goto(`file://${tmpHtmlPath}`, {
       waitUntil: 'domcontentloaded',
       timeout: 180000,
     });
@@ -76,6 +80,7 @@ export default async function handler(req, res) {
     await browser.close();
     browser = null;
 
+    try { fs.unlinkSync(tmpHtmlPath); } catch (_) {}
     const pdfBuffer = fs.readFileSync(tmpPdfPath);
     fs.unlinkSync(tmpPdfPath);
 
@@ -88,6 +93,7 @@ export default async function handler(req, res) {
     if (browser) {
       try { await browser.close(); } catch (_) {}
     }
+    try { if (fs.existsSync(tmpHtmlPath)) fs.unlinkSync(tmpHtmlPath); } catch (_) {}
     try { if (fs.existsSync(tmpPdfPath)) fs.unlinkSync(tmpPdfPath); } catch (_) {}
     res.status(500).json({ error: err.message });
   }
