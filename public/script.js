@@ -490,6 +490,11 @@ async function downloadPDFClientSide(html, filename) {
         iframe.contentDocument.close();
     });
 
+    // body padding 제거 (html2pdf margin 옵션으로 대체)
+    const styleOverride = iframe.contentDocument.createElement('style');
+    styleOverride.textContent = 'body { padding: 0 !important; width: 100% !important; }';
+    iframe.contentDocument.head.appendChild(styleOverride);
+
     // 이미지 로딩 대기 (최대 10초)
     await new Promise(resolve => {
         const imgs = Array.from(iframe.contentDocument.querySelectorAll('img'));
@@ -505,7 +510,7 @@ async function downloadPDFClientSide(html, filename) {
 
     const element = iframe.contentDocument.body;
     const opt = {
-        margin: 0,
+        margin: 10,
         filename: `${filename}.pdf`,
         image: { type: 'jpeg', quality: 0.95 },
         html2canvas: { scale: 2, useCORS: true, allowTaint: true },

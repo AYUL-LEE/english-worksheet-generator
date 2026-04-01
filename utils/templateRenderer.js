@@ -52,9 +52,12 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
   <div class="comic-grid">
     ${validPanels.map((p, i) => {
       const dlg = stripNonEnglish(p.dialogue);
+      const scene = stripNonEnglish(typeof p === 'object' ? (p.scene ?? '') : '');
       return `
     <div class="comic-panel">
-      ${p.url ? `<img src="${p.url}" alt="Panel ${i+1}" class="panel-img" />` : '<div class="panel-placeholder"></div>'}
+      ${p.url
+        ? `<img src="${p.url}" alt="Panel ${i+1}" class="panel-img" />`
+        : `<div class="panel-placeholder">${scene ? `<div class="panel-scene-text">${scene}</div>` : ''}</div>`}
       <div class="panel-num">${i + 1}</div>
       ${dlg ? `<div class="speech-bubble">${dlg}</div>` : ''}
     </div>`;
@@ -101,7 +104,8 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
   .comic-grid { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:48mm 48mm; gap:2px; width:100%; border:2px solid #1a1a1a; border-radius:4px; overflow:hidden; background:#1a1a1a; }
   .comic-panel { position:relative; overflow:hidden; background:#f5f5f5; }
   .panel-img { width:100%; height:100%; object-fit:cover; display:block; }
-  .panel-placeholder { width:100%; height:100%; background:#e8e8e8; }
+  .panel-placeholder { width:100%; height:100%; background:#f0f0f0; display:flex; align-items:center; justify-content:center; padding:8px; }
+  .panel-scene-text { font-size:7px !important; color:#555; text-align:center; line-height:1.4; font-style:italic; }
   .panel-num { position:absolute; top:5px; left:5px; background:#5B8A00; color:#fff; width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:8px !important; font-weight:700; z-index:10; }
   .speech-bubble { position:absolute; bottom:8px; left:50%; transform:translateX(-50%); background:#fff; border:1.5px solid #1a1a1a; border-radius:8px; padding:2px 6px; font-size:7.5px !important; font-weight:600; white-space:normal; max-width:90%; text-align:center; z-index:10; line-height:1.2; }
   .speech-bubble::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:4px solid transparent; border-top-color:#1a1a1a; }
