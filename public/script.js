@@ -293,66 +293,74 @@ async function generateWorksheet() {
     
 }
 
-// 각 섹션 HTML에서 <style> 내용 추출
-function extractStyles(fullHtml) {
-  const matches = [...fullHtml.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)];
-  return matches.map(m => m[1]).join('\n');
-}
+// 섹션 HTML을 스코핑된 페이지 div로 변환
+function sectionToPageDiv(fullHtml, index) {
+  const cls = `sec${index}`;
 
-// 각 섹션 HTML에서 <body> 내용만 추출
-function extractBody(fullHtml) {
-  const m = fullHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-  return m ? m[1] : fullHtml;
+  // Google Fonts link 추출
+  const fontLinks = (fullHtml.match(/<link[^>]+googleapis\.com[^>]+>/g) || []).join('\n');
+
+  // <style> 내용 추출
+  const styleContent = [...fullHtml.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)]
+    .map(m => m[1]).join('\n');
+
+  // body CSS → .sec{N} 로 스코핑, @page/@media print 제거
+  const scopedStyle = styleContent
+    .replace(/@page\b[^{]*\{[^}]*\}/g, '')
+    .replace(/@media\s+print\s*\{[^{}]*(?:\{[^}]*\}[^{}]*)*\}/g, '')
+    .replace(/\bbody\b(?=\s*[{,])/g, `.${cls}`);
+
+  // <body> 내용 추출
+  const bodyMatch = fullHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  const bodyContent = bodyMatch ? bodyMatch[1] : fullHtml;
+
+  return { fontLinks, scopedStyle, html: `<div class="${cls}">${bodyContent}</div>` };
 }
 
 // 기존 generatePreviewHTML 함수 삭제하고 아래로 교체
 function generatePreviewHTML(results, passageCount, selectedTypes) {
-  const sections = [];
+  const sectionHtmls = [];
 
   const perPassageTypes = ['01_본문노트', '03_문장해석', '08_핵심어휘', '09_한줄해석'];
-
-  for (let typeIndex = 0; typeIndex < perPassageTypes.length; typeIndex++) {
-    const type = perPassageTypes[typeIndex];
-    for (let passageIndex = 0; passageIndex < passageCount; passageIndex++) {
-      const result = results[`${type}_passage${passageIndex}`];
-      if (result && result.content) sections.push(result.content);
+  for (const type of perPassageTypes) {
+    for (let i = 0; i < passageCount; i++) {
+      const r = results[`${type}_passage${i}`];
+      if (r && r.content) sectionHtmls.push(r.content);
     }
     if (type === '08_핵심어휘') {
       const dt = results['단어테스트'];
-      if (dt && dt.content) sections.push(dt.content);
+      if (dt && dt.content) sectionHtmls.push(dt.content);
     }
   }
-
   for (let i = 0; i < passageCount; i++) {
     const r = results[`워크북_문제_passage${i}`];
-    if (r && r.content) sections.push(r.content);
+    if (r && r.content) sectionHtmls.push(r.content);
   }
   for (let i = 0; i < passageCount; i++) {
     const r = results[`분석서_passage${i}`];
-    if (r && r.content) sections.push(r.content);
+    if (r && r.content) sectionHtmls.push(r.content);
   }
 
-  // 각 섹션에서 CSS + body 내용 추출 후 단일 HTML로 합치기
-  const allStyles = sections.map(extractStyles).join('\n');
-  const allBodies = sections.map((s, i) =>
-    `<div class="section-page">${extractBody(s)}</div>`
-  ).join('\n<div class="page-break"></div>\n');
+  const pages = sectionHtmls.map((h, i) => sectionToPageDiv(h, i));
+  const fontLinks = [...new Set(pages.flatMap(p => p.fontLinks.split('\n').filter(Boolean)))].join('\n');
+  const allStyles = pages.map(p => p.scopedStyle).join('\n');
+  const allHtml = pages.map(p => p.html).join('\n<div class="page-break"></div>\n');
 
   return `<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+${fontLinks}
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-body { background:white; }
-.section-page { width:210mm; min-height:297mm; overflow:hidden; }
-.page-break { page-break-after:always; break-after:page; height:0; }
+body { background:white; font-family:'Inter','Noto Sans KR',sans-serif; }
+.page-break { page-break-after:always; break-after:page; height:0; display:block; }
 @page { size:A4; margin:0; }
 ${allStyles}
 </style>
 </head>
 <body>
-${allBodies}
+${allHtml}
 </body></html>`;
 }
 
