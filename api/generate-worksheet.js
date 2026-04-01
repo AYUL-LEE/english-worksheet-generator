@@ -154,7 +154,7 @@ export default async function handler(req, res) {
       const guidelines기본 = need기본 ? `
 1. **문장 분리**: 마침표(.), 물음표(?), 느낌표(!) 기준으로 모든 문장을 개별 분리
    - 예시: 지문에 7개 문장이 있으면 sentences 배열에 7개 객체 필요
-2. **핵심어휘**: 15-20개의 단어로 선정.
+2. **핵심어휘**: 10-12개의 단어로 선정.
 
    ▶ **[STEP 1] 지문 난이도 자동 판별 후 어휘 수준 결정**
    | 지문 Lexile 수준 | CEFR | 어휘 수준 기준 |
@@ -168,7 +168,7 @@ export default async function handler(req, res) {
    ▶ **[STEP 2] 어휘 선정 규칙**
    - 동사/명사/부사/형용사/숙어만. 준동사는 동사원형으로.
    - 중학교 기초단어 제외: help, good, bad, make, go, come, think, know, use 등
-   - meanings: 첫 번째는 본문 문맥 뜻. synonyms/antonyms: **반드시 3개 이상**
+   - meanings: 첫 번째는 본문 문맥 뜻. synonyms: **2개**, antonyms: **2개**
 3. **논리흐름**: 지문의 논리 전개를 2~4단계로 나누어 작성.
 4. **웹툰캡션**: dialogue(말풍선)는 반드시 영어로만 (한글·한자·일본어 절대 금지, max 8 words). 4개만.
 
@@ -191,7 +191,7 @@ export default async function handler(req, res) {
    - grammar_points: 어법 포인트 1~3개 (학생에게 친절하게 설명)` : '';
 
       // max_tokens를 선택된 타입에 따라 조정
-      const maxTokens = (need기본 ? 6000 : 0) + (need문제 ? 5000 : 0) + (need분석서 ? 7000 : 0) || 8000;
+      const maxTokens = (need기본 ? 4000 : 0) + (need문제 ? 5000 : 0) + (need분석서 ? 7000 : 0) || 4000;
 
       const prompt = `당신은 한국 고등학교 영어 내신 대비 학습자료 제작 전문가입니다.
 다음 영어 지문을 분석하여 학습자료 데이터를 JSON 형태로 출력하세요.
