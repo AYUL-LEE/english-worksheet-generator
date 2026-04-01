@@ -301,41 +301,34 @@ JSON만 출력하세요.`;
 
       // DALL-E 3 4컷 웹툰 이미지 - 패널별 개별 생성 (병렬)
       let panelImages = [];
-      const isVercel = process.env.VERCEL === '1';
       try {
         const captions = jsonData.type_01_본문노트?.웹툰캡션 ?? [];
 
-        if (isVercel) {
-          console.log('⏭️ Vercel 환경: DALL-E 스킵 (타임아웃 방지)');
-          panelImages = captions.slice(0, 4).map(panel => ({
-            url: null,
-            dialogue: typeof panel === 'object' ? (panel.dialogue ?? '') : ''
-          }));
-        } else {
-          panelImages = await Promise.all(
-            captions.slice(0, 4).map(async (panel, idx) => {
-              const scene = typeof panel === 'string' ? panel : (panel.scene ?? panel);
-              const dialogue = typeof panel === 'object' ? (panel.dialogue ?? '') : '';
+        // DALL-E 2로 빠르게 생성 (Vercel/로컬 모두 동일)
+        // 캐릭터 일관성: 동일한 캐릭터 설명을 모든 패널에 고정
+        const CHARACTER = 'Korean teenage male student, short black hair, round face, big eyes, white school uniform, simple cartoon style';
+        panelImages = await Promise.all(
+          captions.slice(0, 4).map(async (panel, idx) => {
+            const scene = typeof panel === 'string' ? panel : (panel.scene ?? panel);
+            const dialogue = typeof panel === 'object' ? (panel.dialogue ?? '') : '';
 
-              const prompt = `Webtoon comic panel, consistent art style across all panels: ${scene}. SAME character design throughout: a teenage student with short black hair, big round eyes, simple round face, wearing a white school uniform. Clean Korean webtoon style, bold black outlines, flat bright colors, no shading. Absolutely NO text of any kind, NO speech bubbles, NO written words, NO Korean characters, NO Chinese characters, NO Japanese characters, NO Latin letters, NO numbers, NO captions, NO labels anywhere in the image. Pure illustration only. Fill entire canvas.`;
+            const prompt = `Simple cartoon comic panel. ${CHARACTER}. Scene: ${scene}. Flat colors, bold black outlines, no text, no speech bubbles, no written words anywhere. Clean illustration only.`;
 
-              try {
-                const resp = await openai.images.generate({
-                  model: 'dall-e-3',
-                  prompt,
-                  n: 1,
-                  size: '1024x1024',
-                  quality: 'standard',
-                });
-                return { url: resp.data[0].url, dialogue };
-              } catch (e) {
-                console.error(`패널 ${idx + 1} 생성 실패:`, e.message);
-                return { url: null, dialogue };
-              }
-            })
-          );
-          console.log(`🎨 웹툰 패널 ${panelImages.filter(p => p.url).length}/4 생성 완료`);
-        }
+            try {
+              const resp = await openai.images.generate({
+                model: 'dall-e-2',
+                prompt,
+                n: 1,
+                size: '512x512',
+              });
+              return { url: resp.data[0].url, dialogue };
+            } catch (e) {
+              console.error(`패널 ${idx + 1} 생성 실패:`, e.message);
+              return { url: null, dialogue };
+            }
+          })
+        );
+        console.log(`🎨 웹툰 패널 ${panelImages.filter(p => p.url).length}/4 생성 완료`);
       } catch (imgError) {
         console.error('이미지 생성 실패:', imgError.message);
       }
