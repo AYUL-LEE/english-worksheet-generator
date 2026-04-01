@@ -403,35 +403,28 @@ async function downloadPDF() {
     btn.textContent = 'PDF 생성 중...';
     btn.disabled = true;
 
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
     try {
-        if (isLocal) {
-            // 로컬: Puppeteer 서버 사이드 PDF
-            const response = await fetch('/api/generate-pdf', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ htmlContent: generatedHTML, title: pdfTitle })
-            });
-            if (!response.ok) {
-                const err = await response.json().catch(() => ({}));
-                throw new Error(err.error || 'PDF 생성 실패');
-            }
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${pdfTitle}.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-        } else {
-            // Vercel: 클라이언트 사이드 html2pdf.js
-            await downloadPDFClientSide(generatedHTML, pdfTitle);
+        // 항상 Puppeteer 서버 사이드 PDF (로컬/Vercel 동일)
+        const response = await fetch('/api/generate-pdf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ htmlContent: generatedHTML, title: pdfTitle })
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.error || 'PDF 생성 실패');
         }
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${pdfTitle}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
     } catch (error) {
-        alert('PDF 오류: ' + error.message + '\n\nHTML 다운로드 후 Ctrl+P로 저장하세요.');
+        alert('PDF 오류: ' + error.message);
     } finally {
         btn.textContent = origText;
         btn.disabled = false;
