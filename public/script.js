@@ -329,10 +329,6 @@ function generatePreviewHTML(results, passageCount, selectedTypes) {
       const r = results[`${type}_passage${i}`];
       if (r && r.content) sectionHtmls.push(r.content);
     }
-    if (type === '08_핵심어휘') {
-      const dt = results['단어테스트'];
-      if (dt && dt.content) sectionHtmls.push(dt.content);
-    }
   }
   for (let i = 0; i < passageCount; i++) {
     const r = results[`워크북_문제_passage${i}`];

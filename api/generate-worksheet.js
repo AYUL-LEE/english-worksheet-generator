@@ -547,15 +547,6 @@ JSON만 출력하세요.`;
       }
     }
 
-    // 단어 확인 테스트 (전체 지문 합산, 기본워크북 선택된 경우에만)
-    if (!selectedTypes || selectedTypes.기본워크북) {
-      allResults['단어테스트'] = {
-        type: '단어테스트',
-        title: '단어 확인 테스트',
-        content: render_단어테스트(allPassagesData, pageTitle),
-        passageNum: -1
-      };
-    }
 
     return res.status(200).json({
       success: true,
