@@ -77,7 +77,10 @@ export default async function handler(req, res) {
       path: tmpPdfPath,
       format: 'A4',
       printBackground: true,
-      margin: { top: 0, right: 0, bottom: 0, left: 0 },
+      displayHeaderFooter: true,
+      headerTemplate: '<div style="height:12mm;width:100%;font-size:0;margin:0;padding:0;"></div>',
+      footerTemplate: '<div style="height:10mm;width:100%;font-size:0;margin:0;padding:0;"></div>',
+      margin: { top: '12mm', right: '10mm', bottom: '10mm', left: '10mm' },
     });
 
     await page.close();
