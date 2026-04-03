@@ -460,6 +460,11 @@ async function downloadPDFClientSide(html, filename) {
         iframe.contentDocument.close();
     });
 
+    // body width를 100%로 강제 — mm 단위가 px 계산 틀어지는 문제 해소
+    const fix = iframe.contentDocument.createElement('style');
+    fix.textContent = 'body { width:100% !important; margin:0 !important; box-sizing:border-box !important; }';
+    iframe.contentDocument.head.appendChild(fix);
+
     // 이미지 로딩 대기 (최대 15초)
     await new Promise(resolve => {
         const imgs = Array.from(iframe.contentDocument.querySelectorAll('img'));
@@ -474,10 +479,10 @@ async function downloadPDFClientSide(html, filename) {
     });
 
     const opt = {
-        margin: 0,
+        margin: [10, 10, 10, 10],
         filename: `${filename}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, allowTaint: true, width: 794, windowWidth: 794 },
+        html2canvas: { scale: 2, useCORS: true, allowTaint: true, windowWidth: 794 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
