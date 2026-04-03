@@ -3,6 +3,7 @@ import chromium from '@sparticuz/chromium';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { pathToFileURL } from 'url';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -51,7 +52,8 @@ export default async function handler(req, res) {
     // 대용량 HTML(base64 이미지 포함)은 setContent 대신 임시 파일 → goto로 로드
     const tmpHtmlPath = path.join(os.tmpdir(), `worksheet_${timestamp}.html`);
     fs.writeFileSync(tmpHtmlPath, cleanedHTML, 'utf-8');
-    await page.goto(`file://${tmpHtmlPath}`, {
+    const fileUrl = pathToFileURL(tmpHtmlPath).href;
+    await page.goto(fileUrl, {
       waitUntil: 'domcontentloaded',
       timeout: 180000,
     });

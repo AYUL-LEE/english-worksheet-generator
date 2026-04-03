@@ -106,8 +106,8 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
   .comic-page { margin-top:6px; }
   .comic-section-title { font-size:9.5px !important; font-weight:700; color:#fff; background:#5B8A00; padding:3px 8px; margin-bottom:4px; border-radius:3px; letter-spacing:0.5px; }
   .comic-grid { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:48mm 48mm; gap:2px; width:100%; border:2px solid #1a1a1a; border-radius:4px; overflow:hidden; background:#1a1a1a; }
-  .comic-strip-wrap { width:100%; height:98mm; border:2px solid #1a1a1a; border-radius:4px; overflow:hidden; }
-  .comic-strip-img { width:100%; height:100%; object-fit:cover; display:block; }
+  .comic-strip-wrap { width:100%; border:2px solid #1a1a1a; border-radius:4px; overflow:visible; background:#fff; }
+  .comic-strip-img { width:100%; height:auto; display:block; }
   .comic-panel { position:relative; overflow:hidden; background:#f5f5f5; }
   .panel-img { width:100%; height:100%; object-fit:cover; display:block; }
   .panel-svg { width:100%; height:100%; display:block; }
@@ -141,7 +141,6 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
 
   ${comicGridHTML ? `
   <div class="comic-page">
-    <div class="comic-section-title">[ 4컷 만화 ]</div>
     ${comicGridHTML}
   </div>` : ''}
 </body>

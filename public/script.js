@@ -403,26 +403,33 @@ async function downloadPDF() {
     btn.textContent = 'PDF 생성 중...';
     btn.disabled = true;
 
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
     try {
-        // 항상 Puppeteer 서버 사이드 PDF (로컬/Vercel 동일)
-        const response = await fetch('/api/generate-pdf', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ htmlContent: generatedHTML, title: pdfTitle })
-        });
-        if (!response.ok) {
-            const err = await response.json().catch(() => ({}));
-            throw new Error(err.error || 'PDF 생성 실패');
+        if (isLocal) {
+            // 로컬: Puppeteer 서버 사이드 PDF
+            const response = await fetch('/api/generate-pdf', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ htmlContent: generatedHTML, title: pdfTitle })
+            });
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error || 'PDF 생성 실패');
+            }
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${pdfTitle}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        } else {
+            // Vercel: 클라이언트 사이드 PDF (10초 타임아웃 우회)
+            await downloadPDFClientSide(generatedHTML, pdfTitle);
         }
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${pdfTitle}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
     } catch (error) {
         alert('PDF 오류: ' + error.message);
     } finally {
@@ -432,7 +439,6 @@ async function downloadPDF() {
 }
 
 async function downloadPDFClientSide(html, filename) {
-    // html2pdf.js 동적 로드
     if (!window.html2pdf) {
         await new Promise((resolve, reject) => {
             const script = document.createElement('script');
@@ -443,9 +449,8 @@ async function downloadPDFClientSide(html, filename) {
         });
     }
 
-    // iframe으로 HTML 렌더링 후 캡처
     const iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position:fixed;top:0;left:0;width:210mm;height:297mm;border:none;opacity:0;pointer-events:none;';
+    iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:794px;height:1123px;border:none;';
     document.body.appendChild(iframe);
 
     await new Promise(resolve => {
@@ -455,12 +460,7 @@ async function downloadPDFClientSide(html, filename) {
         iframe.contentDocument.close();
     });
 
-    // body padding 제거 (html2pdf margin 옵션으로 대체)
-    const styleOverride = iframe.contentDocument.createElement('style');
-    styleOverride.textContent = 'body { padding: 0 !important; width: 100% !important; }';
-    iframe.contentDocument.head.appendChild(styleOverride);
-
-    // 이미지 로딩 대기 (최대 10초)
+    // 이미지 로딩 대기 (최대 15초)
     await new Promise(resolve => {
         const imgs = Array.from(iframe.contentDocument.querySelectorAll('img'));
         if (imgs.length === 0) return resolve();
@@ -470,19 +470,18 @@ async function downloadPDFClientSide(html, filename) {
             if (img.complete) finish();
             else { img.onload = finish; img.onerror = finish; }
         });
-        setTimeout(resolve, 10000);
+        setTimeout(resolve, 15000);
     });
 
-    const element = iframe.contentDocument.body;
     const opt = {
-        margin: 10,
+        margin: 0,
         filename: `${filename}.pdf`,
-        image: { type: 'jpeg', quality: 0.95 },
-        html2canvas: { scale: 2, useCORS: true, allowTaint: true },
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, allowTaint: true, width: 794, windowWidth: 794 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    await window.html2pdf().set(opt).from(element).save();
+    await window.html2pdf().set(opt).from(iframe.contentDocument.body).save();
     document.body.removeChild(iframe);
 }
 

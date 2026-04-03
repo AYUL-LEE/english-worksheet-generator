@@ -112,26 +112,29 @@ async function generateComicStrip(imageAI, captions, storyContexts) {
     };
   });
 
-  const prompt = `Create a COMPLETE 4-panel educational comic strip as a SINGLE IMAGE in a 2×2 grid layout.
+  const prompt = `Create a COMPLETE 4-panel educational comic strip as a SINGLE SQUARE IMAGE in a 2×2 grid layout. The image must be perfectly square (equal width and height).
 
-CHARACTER: A young high school student with short dark spiky hair, wearing a blue hoodie — the EXACT SAME character in all 4 panels.
+CHARACTER: A young high school student with short dark spiky hair, wearing a blue hoodie — the EXACT SAME character in all 4 panels. Always show the full body including the head.
 
-Panel 1 (top-left) — ${panels[0]?.context}: ${panels[0]?.scene}
-  → Speech bubble: "${panels[0]?.dialogue}"
+Panel 1 (top-left): ${panels[0]?.scene}
+  → Speech bubble text: "${panels[0]?.dialogue}"
 
-Panel 2 (top-right) — ${panels[1]?.context}: ${panels[1]?.scene}
-  → Speech bubble: "${panels[1]?.dialogue}"
+Panel 2 (top-right): ${panels[1]?.scene}
+  → Speech bubble text: "${panels[1]?.dialogue}"
 
-Panel 3 (bottom-left) — ${panels[2]?.context}: ${panels[2]?.scene}
-  → Speech bubble: "${panels[2]?.dialogue}"
+Panel 3 (bottom-left): ${panels[2]?.scene}
+  → Speech bubble text: "${panels[2]?.dialogue}"
 
-Panel 4 (bottom-right) — ${panels[3]?.context}: ${panels[3]?.scene}
-  → Speech bubble: "${panels[3]?.dialogue}"
+Panel 4 (bottom-right): ${panels[3]?.scene}
+  → Speech bubble text: "${panels[3]?.dialogue}"
 
-STYLE:
+RULES:
+- DO NOT write any text labels, titles, panel numbers, or scene descriptions anywhere in the image
+- ONLY text allowed: the speech bubble dialogue listed above
 - Vibrant cartoon/webtoon style, thick black panel borders dividing the 2×2 grid
 - Each panel has a colorful background matching its scene
 - Speech bubbles with LARGE, BOLD, clearly readable English text
+- Full character body (head to toe) visible in every panel
 - Consistent character design across all 4 panels
 - NO Korean characters anywhere`;
 
