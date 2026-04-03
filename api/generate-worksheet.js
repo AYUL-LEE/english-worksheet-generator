@@ -133,10 +133,10 @@ RULES:
 - ONLY text allowed: the speech bubble dialogue listed above
 - Vibrant cartoon/webtoon style, thick black panel borders dividing the 2×2 grid
 - Each panel has a colorful background matching its scene
-- Speech bubbles with LARGE, BOLD, clearly readable English text
+- Speech bubbles with LARGE, BOLD, clearly readable Korean (한글) text
 - Full character body (head to toe) visible in every panel
 - Consistent character design across all 4 panels
-- NO Korean characters anywhere`;
+- Use Korean characters for all speech bubble text`;
 
   for (const modelName of IMAGE_MODELS) {
     try {
@@ -196,10 +196,10 @@ export default async function handler(req, res) {
       }
     ],
     "웹툰캡션": [
-      {"scene": "Panel 1: Vivid scene description for Gemini image generation — characters, setting, action, emotion. English only.", "dialogue": "What the character says or thinks in this panel (English, natural speech, max 10 words)"},
-      {"scene": "Panel 2: Vivid scene description continuing the story. Same character. English only.", "dialogue": "Character's speech/thought for panel 2 (English, max 10 words)"},
-      {"scene": "Panel 3: Vivid scene description with story twist. Same character. English only.", "dialogue": "Character's speech/thought for panel 3 (English, max 10 words)"},
-      {"scene": "Panel 4: Vivid scene description with story resolution. Same character. English only.", "dialogue": "Character's speech/thought for panel 4 (English, max 10 words)"}
+      {"scene": "Panel 1: Vivid scene description for Gemini image generation — characters, setting, action, emotion. English only.", "dialogue": "캐릭터가 이 패널에서 말하거나 생각하는 내용 (한글, 자연스러운 구어체, 최대 15자)"},
+      {"scene": "Panel 2: Vivid scene description continuing the story. Same character. English only.", "dialogue": "캐릭터의 말/생각 패널2 (한글, 최대 15자)"},
+      {"scene": "Panel 3: Vivid scene description with story twist. Same character. English only.", "dialogue": "캐릭터의 말/생각 패널3 (한글, 최대 15자)"},
+      {"scene": "Panel 4: Vivid scene description with story resolution. Same character. English only.", "dialogue": "캐릭터의 말/생각 패널4 (한글, 최대 15자)"}
     ]
   },
   "type_03_문장해석": {
@@ -331,7 +331,7 @@ export default async function handler(req, res) {
 3. **논리흐름**: 지문의 논리 전개를 2~4단계로 나누어 작성.
 4. **웹툰캡션**: 4패널이 지문 핵심 내용을 하나의 스토리로 전개 (도입→전개→전환→결론). Gemini 이미지 생성 AI에게 전달할 프롬프트.
    - scene: 이미지 생성용 장면 묘사 — 캐릭터, 배경, 행동, 감정을 구체적으로 (영어만, 1-2문장)
-   - dialogue: 말풍선 텍스트 — 자연스러운 영어 (한글·한자·일본어 절대 금지, max 10 words)
+   - dialogue: 말풍선 텍스트 — 자연스러운 한글 구어체 (영어 절대 금지, 최대 15자)
    - 4개 패널이 하나의 이야기처럼 연결되어야 함
 
 **type_03, type_09는 sentences 배열에 지문의 모든 문장이 포함되어야 합니다!**` : '';
@@ -475,14 +475,14 @@ JSON만 출력하세요.`;
         `Panel 3/4 - Story twist: ${jsonData.type_01_본문노트?.논리흐름?.[2]?.소제목 || 'Story turns'}`,
         `Panel 4/4 - Story resolution: conclusion`,
       ];
+      // Vercel 환경에서는 Gemini 이미지 생성 건너뜀 (10초 타임아웃 초과 방지)
+      const skipImage = process.env.VERCEL === '1';
       let panelImages;
-      if (imageAI) {
+      if (imageAI && !skipImage) {
         const stripUrl = await generateComicStrip(imageAI, captions, storyContexts);
         if (stripUrl) {
-          // 단일 이미지로 4컷 전체 표시
           panelImages = [{ svgContent: null, url: stripUrl, dialogue: '', isStrip: true }];
         } else {
-          // 스트립 실패 시 SVG 폴백
           panelImages = captions.slice(0, 4).map((panel, pi) => {
             const panelObj = typeof panel === 'object' ? panel : { dialogue: String(panel) };
             const dialogue = panelObj.dialogue || panelObj.line1 || '';
