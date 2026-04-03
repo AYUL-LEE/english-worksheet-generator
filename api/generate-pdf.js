@@ -77,7 +77,8 @@ export default async function handler(req, res) {
       path: tmpPdfPath,
       format: 'A4',
       printBackground: true,
-      margin: { top: '10mm', right: '10mm', bottom: '10mm', left: '10mm' },
+      displayHeaderFooter: false,
+      margin: { top: '15mm', right: '10mm', bottom: '15mm', left: '10mm' },
     });
 
     await page.close();
