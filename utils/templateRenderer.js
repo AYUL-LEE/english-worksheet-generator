@@ -118,7 +118,7 @@ export function render01_본문노트(data, panelImages = [], pageTitle = '') {
   .speech-bubble { position:absolute; bottom:8px; left:50%; transform:translateX(-50%); background:#fff; border:1.5px solid #1a1a1a; border-radius:8px; padding:2px 6px; font-size:7.5px !important; font-weight:600; white-space:normal; max-width:90%; text-align:center; z-index:10; line-height:1.2; }
   .speech-bubble::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:4px solid transparent; border-top-color:#1a1a1a; }
   .speech-bubble::before { content:''; position:absolute; top:calc(100% - 1.5px); left:50%; transform:translateX(-50%); border:4px solid transparent; border-top-color:#fff; z-index:1; }
-  @media print { body { width:100% !important; margin:0 !important; padding:0 !important; } }
+  @page { margin: 15mm 10mm; } @media print { body { width:100% !important; margin:0 !important; padding:0 !important; } }
 </style>
 </head>
 <body>
@@ -283,7 +283,7 @@ export function render04_문장분석(data) {
   
   .point-box { border-top:1px dashed #CBD5E1; background:#F9FAFB; padding:6px 10px; font-size:10px !important; color:#374151; }
   
-  @media print { body { padding:0 !important; } .sentence-row { break-inside:avoid; margin-bottom:8px; } }
+  @page { margin: 15mm 10mm; } @media print { body { padding:0 !important; } .sentence-row { break-inside:avoid; margin-bottom:8px; } }
 </style>
 </head>
 <body>
@@ -360,7 +360,7 @@ export function render05_어순배열(data) {
   
   .ko { padding:8px 12px; font-size:10px !important; color:#1E40AF; display:flex; align-items:center; background:#F0F8FF; }
   
-  @media print { body { padding:0 !important; } .item { break-inside:avoid; } }
+  @page { margin: 15mm 10mm; } @media print { body { padding:0 !important; } .item { break-inside:avoid; } }
 </style>
 </head>
 <body>
@@ -423,7 +423,7 @@ export function render06_단어(data) {
   
   .chip-pos { display:inline-block; background:#1E40AF; color:#fff; font-size:7px; padding:1px 3px; border-radius:4px; margin-right:3px; vertical-align:middle; }
   
-  @media print { body { padding:0 !important; } table { break-inside:avoid; } }
+  @page { margin: 15mm 10mm; } @media print { body { padding:0 !important; } table { break-inside:avoid; } }
 </style>
 </head>
 <body>
@@ -495,7 +495,7 @@ export function render07_구문(data) {
   .grammar-title { font-weight:700; color:#92400E; margin-bottom:6px; font-size:10px !important; }
   .grammar-content { color:#78350F; font-size:10px !important; line-height:1.5; }
   
-  @media print { body { padding:0 !important; } .item { break-inside:avoid; } }
+  @page { margin: 15mm 10mm; } @media print { body { padding:0 !important; } .item { break-inside:avoid; } }
 </style>
 </head>
 <body>
@@ -756,7 +756,7 @@ const WB_STYLE = `
   .ab { flex:1; border-bottom:1px solid #AAA; height:14px; }
   .sent-item { display:flex; gap:5px; margin-bottom:5px; font-size:10px; line-height:1.7; }
   .sl { font-weight:700; color:#5B8A00; min-width:20px; flex-shrink:0; }
-  @media print { body { width:100% !important; margin:0 !important; padding:0 !important; } }
+  @page { margin: 15mm 10mm; } @media print { body { width:100% !important; margin:0 !important; padding:0 !important; } }
   .st { color:#222; }
   .order-ans { border-top:1px solid #E0E0E0; padding-top:7px; display:flex; align-items:center; gap:6px; font-size:9px; }
   .order-label { color:#555; font-weight:600; white-space:nowrap; }
