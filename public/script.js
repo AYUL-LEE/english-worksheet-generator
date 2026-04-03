@@ -403,10 +403,11 @@ async function downloadPDF() {
     btn.textContent = 'PDF 생성 중...';
     btn.disabled = true;
 
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const isVercel = window.location.hostname.includes('vercel.app');
+    const useClientPDF = isVercel; // Vercel만 클라이언트 PDF (10초 제한), 나머지는 Puppeteer
 
     try {
-        if (isLocal) {
+        if (!useClientPDF) {
             // 로컬: Puppeteer 서버 사이드 PDF
             const response = await fetch('/api/generate-pdf', {
                 method: 'POST',

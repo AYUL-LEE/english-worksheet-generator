@@ -21,18 +21,20 @@ export default async function handler(req, res) {
 
   try {
     const isVercel = process.env.VERCEL === '1';
+    const isRender = !!process.env.RENDER;
+    const isCloud = isVercel || isRender;
 
-    const executablePath = isVercel
+    const executablePath = isCloud
       ? await chromium.executablePath()
       : process.env.CHROME_PATH ||
         'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 
-    console.log('🔍 실행 환경:', isVercel ? 'Vercel' : 'Local');
+    console.log('🔍 실행 환경:', isVercel ? 'Vercel' : isRender ? 'Render' : 'Local');
     console.log('🔍 Chrome 경로:', executablePath);
     console.log('🔍 HTML 크기:', Math.round(htmlContent.length / 1024), 'KB');
 
     browser = await puppeteer.launch({
-      args: isVercel
+      args: isCloud
         ? chromium.args
         : ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
       executablePath,
